@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0614">
+  <title>时间螺旋 · TimeSpiral</title>
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <!-- Nuke any old service worker before loading game -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.unregister());
+        console.log('[TS] Unregistered', regs.length, 'old service worker(s)');
+      });
+    }
+  </script>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
