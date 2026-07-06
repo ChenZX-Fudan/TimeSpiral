@@ -2,14 +2,7 @@
 
 点触探险游戏。你扮演 **12号守护者**，在时间螺旋中探索、解谜、战斗，阻止暗影力量的入侵。
 
-## 🚀 运行
-
-```bash
-cd e:\Claude\TimeSpiral
-python -m http.server 8081
-```
-
-浏览器打开 `http://localhost:8081`
+浏览器打开 `https://chenzx-fudan.github.io/TimeSpiral/`
 
 ---
 
@@ -88,9 +81,11 @@ TimeSpiral/
 ├── js/main.js           ← 全部游戏逻辑
 ├── js/data/stories.json ← 故事文本
 ├── images/              ← 角色图、封面
-│   ├── 5.jpg, 9.jpg, 11.jpg, 12.jpg, 18.jpg, 21.jpg, 36.jpg
+│   ├── 5.png, 9.png, 11.png, 12.png, 18.png, 21.png, 36.png 等角色图
 │   ├── 封面1.jpg
 │   └── 地图.png
 ├── story_text.txt       ← 原始故事文档
 └── README.md
+```
+
 ```
