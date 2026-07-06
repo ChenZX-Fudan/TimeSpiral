@@ -55,23 +55,28 @@ function getChapterTalks(chapterId) {
       // --- 螺旋中心 ---
       'n36': [
         ['36','12号，你感知到了吗？裂缝区域的异常波动越来越强烈。时间在颤抖。'],
-        ['36','我们的探测器确认了——暗影生物在裂缝区域出没。这是时间禁锢者卷土重来的第一个信号。'],
+        ['36','1号回溯了过去，2号预见了危机——两条时间线都指向同一个结论：暗影正在回归。'],
         ['36','去裂缝区域调查。如果发现暗影生物，消灭它。这是你作为守护者的第一个任务。'],
       ],
       'n5': [
-        ['5','暗影斥候——它们是时间禁锢者的侦察兵。速度快，攻击不致命，但绝不能让它们把情报带回去。'],
-        ['5','战斗中合理使用时间能量。记住，能量节点和时间之泉可以补充能量。'],
-        ['5','我分析过裂缝区域的能量分布：暗影斥候通常潜伏在东北方向，靠近大裂缝的位置。'],
+        ['5','暗影斥候——时间禁锢者的侦察兵。速度快，攻击不致命，但绝不能让它们把情报带回去。'],
+        ['5','战斗中用时间能量强化攻击。记住，找到时间之泉可以回复能量。'],
+        ['5','裂缝区域的能量分布我已经标好了。暗影斥候潜伏在东北方向，靠近大裂缝的位置。'],
       ],
-      'n18': [
-        ['18','暗影斥候？听起来好吓人！不过你可是12号啊，我相信你！'],
-        ['18','等等，我有一个天才主意：暗影怕光对吧？裂缝区域…好像…没有光。嗯，当我没说。'],
-        ['18','总之快去快回！我在这里给你加油！✊'],
+      'n1': [
+        ['1','我回溯了时间之河……时间之战后，Zero封印了时间之心，但裂缝从未真正愈合。'],
+        ['1','暗影在裂缝中蛰伏了无数年岁。它们一直在等待封印削弱的那一刻。'],
+        ['1','现在裂缝在扩大。12号，你是阻止它进一步蔓延的关键。'],
       ],
-      'n0': [
-        ['Zero','裂缝……那是时间之战留下的伤疤。即使封印了时间之心，暗影依然在裂缝中滋生。'],
-        ['Zero','12号，你即将面对的是暗影斥候——并不强大，但它是更大的威胁的前兆。'],
-        ['Zero','记住：恐惧是暗影最好的武器。保持内心的光芒，你就不会输。'],
+      'n2': [
+        ['2','（推了推眼镜）我分析了未来72小时内的时间流分支。情况不太乐观。'],
+        ['2','如果你不尽快前往裂缝区域，暗影斥候会在48小时内完成侦察——然后大部队就会涌入。'],
+        ['2','但我也看到了另一条时间线：你成功消灭了斥候，守护者们获得宝贵的准备时间。我相信你能做到。'],
+      ],
+      'n9': [
+        ['9','时间波动数据正在异常增长。频率、振幅都超出了正常范围。'],
+        ['9','值得注意：裂缝区域的能量频率和暗影精华的共振模式高度吻合。时间禁锢者的手笔。'],
+        ['9','建议携带时间水晶前往。水晶能稳定你周围的时空场，削弱暗影的力量。'],
       ],
       // --- 裂缝区域 ---
       'n21': [
@@ -82,6 +87,27 @@ function getChapterTalks(chapterId) {
     },
   };
   return talks[chapterId] || {};
+}
+
+// ========== CHAPTER-SPECIFIC ROOM LAYOUTS ==========
+function getChapterSpots(chapterId) {
+  const spots = {
+    'ch1': {
+      'spiral_nexus': [
+        { id:'n36', t:'npc', x:48, y:20, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:20, y:42, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n1',  t:'npc', x:30, y:62, icon:'🐱', label:'1·时间回溯者', img:'1.png' },
+        { id:'n2',  t:'npc', x:72, y:58, icon:'🐱', label:'2·时间预知者', img:'2.png' },
+        { id:'n9',  t:'npc', x:78, y:35, icon:'🐱', label:'9·分析师', img:'9.png' },
+        { id:'fountain', t:'heal', x:50, y:72, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
+      ],
+      'temple_of_time': [
+        { id:'altar', t:'puzzle', x:50, y:45, icon:'🔮', label:'水晶祭坛', ptype:'memory', pdesc:'激活祭坛上的时间符文', pflag:'solved_altar', preward:'time_crystal', pmsg:'时间水晶在祭坛上凝聚成形！获得「时间水晶」💎' },
+        { id:'scroll', t:'item', x:25, y:35, icon:'📚', label:'古老书架', iid:'ancient_scroll' },
+      ],
+    },
+  };
+  return spots[chapterId] || {};
 }
 
 // ========== ROOMS (same structure, conditional on chapter) ==========
@@ -196,6 +222,22 @@ function getRoom(chapterId) {
       }
       return spot;
     });
+  });
+
+  // Apply chapter-specific room layouts
+  const chapterSpots = getChapterSpots(S.chapter);
+  Object.entries(chapterSpots).forEach(([roomId, overrideSpots]) => {
+    if (rooms[roomId]) {
+      const exits = rooms[roomId].spots.filter(s => s.t === 'exit');
+      rooms[roomId].spots = [...overrideSpots, ...exits];
+      // Re-apply talks to the new spots
+      rooms[roomId].spots = rooms[roomId].spots.map(spot => {
+        if (spot.t === 'npc' && chapterTalks[spot.id]) {
+          return { ...spot, talk: chapterTalks[spot.id] };
+        }
+        return spot;
+      });
+    }
   });
 
   return rooms;
@@ -474,7 +516,7 @@ function handleSpot(spot) {
       }
     }
     let i = 0;
-    const next = () => { if (i >= spot.talk.length) return; const [sp,tx] = spot.talk[i]; i++; showDialog(sp, tx, i < spot.talk.length ? next : null); };
+    const next = () => { if (i >= spot.talk.length) return; const [sp,tx] = spot.talk[i]; i++; showDialog(sp, tx, i < spot.talk.length ? next : null, spot.img); };
     next(); return;
   }
   if (spot.t === 'item') {
@@ -490,12 +532,25 @@ function handleSpot(spot) {
 }
 
 // ========== DIALOG ==========
-function showDialog(speaker, text, onDone) {
+function showDialog(speaker, text, onDone, img) {
   $('.dlg-wrap')?.remove(); showingDialog = true;
   const wrap = document.createElement('div');
   wrap.className = 'dlg-wrap';
-  wrap.style.cssText = 'position:absolute;bottom:16px;left:16px;right:16px;z-index:200;max-width:460px;margin:0 auto;';
-  wrap.innerHTML = `<div style="background:rgba(16,10,30,0.96);border:1px solid #3d2e60;border-radius:10px;padding:14px 16px;backdrop-filter:blur(12px);animation:slideUp 0.25s ease;"><div style="font-size:0.75rem;color:${speaker==='旁白'?'#7c6b9a':'#ffd54f'};margin-bottom:4px;${speaker==='旁白'?'font-style:italic':''}">${speaker}</div><div style="font-size:0.95rem;line-height:1.6;color:#ede7f6;">${text}</div><div style="float:right;font-size:0.7rem;color:#7c6b9a;margin-top:4px;">点击${onDone?'继续':'关闭'} ▸</div></div>`;
+  wrap.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;max-width:500px;width:90%;';
+
+  const portraitHTML = img ? `
+    <div style="flex-shrink:0;width:90px;height:90px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 16px rgba(179,136,255,0.35);margin-right:14px;align-self:center;">
+      <img src="images/${img}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+    </div>` : '';
+
+  wrap.innerHTML = `<div style="background:rgba(16,10,30,0.96);border:1px solid #3d2e60;border-radius:14px;padding:16px 18px;backdrop-filter:blur(12px);animation:slideUp 0.25s ease;display:flex;align-items:flex-start;gap:0;">
+    ${portraitHTML}
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:0.8rem;color:${speaker==='旁白'?'#7c6b9a':'#ffd54f'};margin-bottom:6px;${speaker==='旁白'?'font-style:italic':''}">${speaker}</div>
+      <div style="font-size:0.95rem;line-height:1.65;color:#ede7f6;">${text}</div>
+    </div>
+  </div>
+  <div style="text-align:right;font-size:0.65rem;color:#7c6b9a;margin-top:4px;padding-right:8px;">点击${onDone?'继续':'关闭'} ▸</div>`;
   wrap.addEventListener('click', () => { wrap.remove(); showingDialog = false; if (onDone) setTimeout(onDone, 50); });
   ct().appendChild(wrap);
 }
