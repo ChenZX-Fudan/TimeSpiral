@@ -268,25 +268,49 @@ function showChapterSelect() {
   html += `</div>`;
   ct().innerHTML = html;
 
-  // Click handlers
-  ct().querySelectorAll('.ch-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const chId = card.dataset.ch;
-      const ch = allChapters.find(c => c.id === chId);
-      if (!ch) return;
-      const isExtra = EXTRAS.some(e => e.id === chId);
-      if (!S.unlocked.includes(chId)) return;
-      if (isExtra && !mainDone) { toast('完成所有8章主线后解锁番外'); return; }
-      S.chapter = chId;
-      S.room = ch.room;
-      showStoryReader(ch);
-    });
-    if (S.unlocked.includes(chId)) {
-      card.addEventListener('mouseenter', () => { card.style.borderColor = '#b388ff'; card.style.background = 'rgba(45,31,74,0.9)'; });
-      card.addEventListener('mouseleave', () => {
-        card.style.borderColor = S.completed.includes(chId) ? '#69f0ae' : '#3d2e60';
-        card.style.background = 'rgba(35,24,56,0.8)';
-      });
+  // Event delegation: single listener on the container
+  ct().addEventListener('click', function chCardClick(e) {
+    const card = e.target.closest('.ch-card');
+    if (!card) return;
+    const chId = card.dataset.ch;
+    if (!chId) return;
+    console.log('[TS] Card clicked:', chId, 'unlocked:', S.unlocked.includes(chId));
+    const ch = allChapters.find(c => c.id === chId);
+    if (!ch) return;
+    const isExtra = EXTRAS.some(ex => ex.id === chId);
+    if (!S.unlocked.includes(chId)) { console.warn('[TS] Locked:', chId); return; }
+    if (isExtra && !mainDone) { toast('完成所有8章主线后解锁番外'); return; }
+    S.chapter = chId;
+    S.room = ch.room;
+    // Show story reader - use preloaded data or fall through to game
+    const storyText = STORY_DATA[chId]?.text || '';
+    ct().innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;">
+        <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+          <span style="color:#b388ff;font-weight:600;">📖 ${ch.title}</span>
+          <button id="btn-skip-story" style="padding:8px 18px;border:1px solid #ffd54f;border-radius:16px;background:rgba(255,213,79,0.1);color:#ffd54f;font-size:0.85rem;font-family:inherit;cursor:pointer;">跳过 ⏭</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:20px 18px;color:#ede7f6;line-height:2;font-size:0.95rem;">
+          ${storyText ? storyText.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('') : '<p style="text-align:center;color:#7c6b9a;padding:40px;">暂无文本，直接进入游戏吧</p>'}
+        </div>
+        <div style="padding:16px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+          <button id="btn-enter-game" style="width:220px;padding:14px 0;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1.05rem;font-family:inherit;cursor:pointer;">🎮 进入冒险</button>
+          <div style="font-size:0.7rem;color:#7c6b9a;margin-top:8px;">目标：${ch.obj}</div>
+        </div>
+      </div>`;
+    document.getElementById('btn-skip-story')?.addEventListener('click', () => startChapterGame(ch));
+    document.getElementById('btn-enter-game')?.addEventListener('click', () => startChapterGame(ch));
+
+    // Async load story if not preloaded yet (non-blocking)
+    if (!storyText) {
+      fetch('js/data/stories.json').then(r => r.json()).then(data => {
+        STORY_DATA = data;
+        const text = data[chId]?.text || '';
+        if (text) {
+          const el = ct().querySelector('[style*="overflow-y:auto"]');
+          if (el) el.innerHTML = text.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('');
+        }
+      }).catch(() => {});
     }
   });
 
