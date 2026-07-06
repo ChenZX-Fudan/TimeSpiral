@@ -302,31 +302,45 @@ function showChapterSelect() {
 
 // --- Story Reader ---
 async function showStoryReader(chapter) {
-  // Load story text from JSON
-  let storyText = '';
-  try {
-    const resp = await fetch('js/data/stories.json');
-    const data = await resp.json();
-    storyText = data[chapter.id]?.text || '';
-  } catch(e) { console.warn('Story text not loaded:', e); }
-
+  // Show loading immediately
   ct().innerHTML = `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;">
       <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
         <span style="color:#b388ff;font-weight:600;">📖 ${chapter.title}</span>
         <button id="btn-skip-story" style="padding:8px 18px;border:1px solid #ffd54f;border-radius:16px;background:rgba(255,213,79,0.1);color:#ffd54f;font-size:0.85rem;font-family:inherit;cursor:pointer;">跳过 ⏭</button>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:20px 18px;color:#ede7f6;line-height:2;font-size:0.95rem;">
-        ${storyText ? storyText.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('') : '<p style="text-align:center;color:#7c6b9a;padding:40px;">暂无文本，直接进入游戏吧</p>'}
+      <div style="flex:1;overflow-y:auto;padding:20px 18px;color:#ede7f6;line-height:2;font-size:0.95rem;text-align:center;color:#7c6b9a;padding-top:80px;">
+        <p>⏳ 加载中...</p>
       </div>
       <div style="padding:16px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
         <button id="btn-enter-game" style="width:220px;padding:14px 0;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1.05rem;font-family:inherit;cursor:pointer;">🎮 进入冒险</button>
         <div style="font-size:0.7rem;color:#7c6b9a;margin-top:8px;">目标：${chapter.obj}</div>
       </div>
     </div>`;
-
   document.getElementById('btn-skip-story')?.addEventListener('click', () => startChapterGame(chapter));
   document.getElementById('btn-enter-game')?.addEventListener('click', () => startChapterGame(chapter));
+
+  // Use preloaded story data, or fallback to fetch
+  let storyText = STORY_DATA[chapter.id]?.text || '';
+  if (!storyText && Object.keys(STORY_DATA).length === 0) {
+    try {
+      const resp = await fetch('js/data/stories.json');
+      const data = await resp.json();
+      STORY_DATA = data;
+      storyText = data[chapter.id]?.text || '';
+    } catch(e) { console.warn('[TS] Story text not loaded:', e); }
+  }
+
+  // Update the content area with story text (or keep the default)
+  const contentEl = ct().querySelector('div[style*="flex:1"]');
+  if (contentEl) {
+    if (storyText) {
+      contentEl.style.cssText = 'flex:1;overflow-y:auto;padding:20px 18px;color:#ede7f6;line-height:2;font-size:0.95rem;';
+      contentEl.innerHTML = storyText.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('');
+    } else {
+      contentEl.innerHTML = '<p style="text-align:center;color:#7c6b9a;padding:40px;">暂无文本，直接进入游戏吧</p>';
+    }
+  }
 }
 
 // --- Game ---
@@ -733,4 +747,10 @@ function toast(msg) {
 
 // ========== BOOT ==========
 console.log('[TS] Booting TimeSpiral...');
+// Preload story data so chapter clicks respond instantly
+let STORY_DATA = {};
+fetch('js/data/stories.json')
+  .then(r => r.json())
+  .then(d => { STORY_DATA = d; console.log('[TS] Stories preloaded:', Object.keys(d).length, 'chapters'); })
+  .catch(e => console.warn('[TS] Story preload failed:', e));
 document.addEventListener('DOMContentLoaded', showTitle);
