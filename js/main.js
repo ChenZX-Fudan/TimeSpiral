@@ -164,6 +164,7 @@ function getChapterSpots(chapterId) {
         { id:'n2',  t:'npc', x:75, y:55, icon:'🐱', label:'2·时间预知者', img:'2.png' },
         { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
+    },
   };
   return spots[chapterId] || {};
 }
