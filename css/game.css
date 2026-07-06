@@ -25,6 +25,12 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'PingFang
 /* Dialog slide up */
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+/* Map marker pulse */
+@keyframes mapPulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.5; }
+}
+
 /* Chapter card hover effect */
 .ch-card { transition: all 0.2s ease; }
 .ch-card:hover { border-color: #b388ff !important; background: rgba(45,31,74,0.9) !important; }

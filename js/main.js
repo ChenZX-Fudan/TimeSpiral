@@ -12,6 +12,15 @@ const S = {
   completed: []
 };
 
+// ========== MAP POSITIONS (百分比, 对应 地图.png 上的房间位置) ==========
+const ROOM_POS = {
+  'spiral_nexus':    { x:50, y:50, label:'🌀 螺旋中心' },
+  'temple_of_time':  { x:72, y:28, label:'🏛️ 时间神殿' },
+  'fracture_zone':   { x:28, y:32, label:'💫 裂缝区域' },
+  'shadow_realm':    { x:22, y:68, label:'🌑 暗影之地' },
+  'time_pathways':   { x:70, y:70, label:'✨ 时间通道' },
+};
+
 // ========== CHAPTER DEFINITIONS ==========
 // Each chapter: id, title, objective (for game part), starting room
 const CHAPTERS = [
@@ -47,11 +56,11 @@ function getRoom(chapterId) {
       bg:'radial-gradient(ellipse at 50% 40%, #2d1560 0%, #1a1040 40%, #0a0614 100%)',
       entry:'时间螺旋的光芒在头顶缓缓流动。守护者们的基地。',
       spots:[
-        { id:'n36', t:'npc', x:48, y:30, icon:'🐱', label:'36·领袖', img:'36.jpg',
+        { id:'n36', t:'npc', x:48, y:30, icon:'🐱', label:'36·领袖', img:'36.png',
           talk:[['36','时间螺旋的平衡正在被打破。新的威胁已经出现。'], ['36','去和其他守护者交谈，了解当前的情况。']] },
-        { id:'n5', t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.jpg',
+        { id:'n5', t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.png',
           talk:[['5','12！裂缝区域出现了异常波动。我们需要立刻行动。'], ['5','先去神殿找到时间水晶——那是我们对抗暗影的关键。']] },
-        { id:'n18', t:'npc', x:70, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.jpg',
+        { id:'n18', t:'npc', x:70, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.png',
           talk:[['18','嘿！别愁眉苦脸的！虽然暗影很可怕，但有我在呢！']] },
         { id:'fountain', t:'heal', x:50, y:68, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
@@ -64,7 +73,7 @@ function getRoom(chapterId) {
       spots:[
         { id:'altar', t:'puzzle', x:50, y:45, icon:'🔮', label:'水晶祭坛', ptype:'memory', pdesc:'激活祭坛上的时间符文', pflag:'solved_altar', preward:'time_crystal', pmsg:'时间水晶在祭坛上凝聚成形！获得「时间水晶」💎' },
         { id:'scroll', t:'item', x:25, y:35, icon:'📚', label:'古老书架', iid:'ancient_scroll' },
-        { id:'n9', t:'npc', x:70, y:50, icon:'🐱', label:'9·分析师', img:'9.jpg',
+        { id:'n9', t:'npc', x:70, y:50, icon:'🐱', label:'9·分析师', img:'9.png',
           talk:[['9','暗影的力量在干扰时间流动。'], ['9','把时间水晶带到裂缝区域的熔炉，可以锻造出水晶钥匙。']] },
       ],
       items:{ 'ancient_scroll':{ txt:'卷轴上写着："暗影惧怕水晶之光。将时间水晶带到裂缝区域的熔炉，锻造水晶钥匙。"', flag:'read_scroll' } },
@@ -78,7 +87,7 @@ function getRoom(chapterId) {
         { id:'forge', t:'npc', x:35, y:40, icon:'🔥', label:'时间熔炉', talk:[['旁白','一座古老的熔炉，可以用时间水晶锻造钥匙。']] },
         { id:'battle1', t:'battle', x:65, y:35, icon:'👾', label:'暗影斥候', enemy:{name:'暗影斥候',sprite:'👾',hp:120}, wflag:'beat_scout' },
         { id:'rift', t:'info', x:50, y:65, icon:'⚡', label:'巨大裂缝', txt:'一道巨大的时间裂缝。黑暗能量不断从中渗出。需要水晶钥匙才能彻底封印。' },
-        { id:'n21', t:'npc', x:80, y:55, icon:'🐱', label:'21·探险家', img:'21.jpg', talk:[['21','小心！这里的暗影比之前遇到的更强大。']] },
+        { id:'n21', t:'npc', x:80, y:55, icon:'🐱', label:'21·探险家', img:'21.png', talk:[['21','小心！这里的暗影比之前遇到的更强大。']] },
       ],
       items:{
         'time_crystal':{ txt:'将时间水晶放入熔炉……水晶钥匙锻造成功！🔑 封印被解开了！', flag:'shadow_unlock' },
@@ -103,7 +112,7 @@ function getRoom(chapterId) {
       entry:'发光的时间流如同河流般贯穿空间。守护者们通过这些通道快速移动。',
       spots:[
         { id:'herb', t:'item', x:30, y:40, icon:'🌿', label:'时间草', iid:'healing_herb' },
-        { id:'n11', t:'npc', x:60, y:30, icon:'🐱', label:'11·节奏者', img:'11.jpg', talk:[['11','通道里的时间草可以恢复能量！']] },
+        { id:'n11', t:'npc', x:60, y:30, icon:'🐱', label:'11·节奏者', img:'11.png', talk:[['11','通道里的时间草可以恢复能量！']] },
         { id:'heal1', t:'heal', x:50, y:55, icon:'💚', label:'能量节点', amt:20, txt:'时间通道的能量节点为你补充了20点时间能量。' },
       ],
       items:{ 'healing_herb':{ txt:'吃下时间草，时间能量恢复了30点。', flag:'used_herb' } },
@@ -348,8 +357,10 @@ function updateHUD(roomName) {
     </span>
     <button id="btn-inv" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🎒</button>
     <button id="btn-time" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">⚡</button>
+    <button id="btn-map" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🗺️</button>
     <button id="btn-chapters" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">📖</button>`;
   document.getElementById('btn-inv')?.addEventListener('click', toggleInventory);
+  document.getElementById('btn-map')?.addEventListener('click', showMap);
   document.getElementById('btn-time')?.addEventListener('click', useTimePower);
   document.getElementById('btn-chapters')?.addEventListener('click', () => { saveGame(); showChapterSelect(); });
 }
@@ -566,6 +577,53 @@ function useTimePower() {
     el.textContent = h.txt; ct().appendChild(el); setTimeout(() => el.remove(), 2500);
   }); }
   toast('⏳ 时间感知触发...');
+}
+
+// ========== WORLD MAP ==========
+function showMap() {
+  // Remove existing map overlay if any
+  $('.map-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'map-overlay';
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:300;background:rgba(5,3,12,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+
+  // Build room markers
+  let markersHTML = '';
+  Object.entries(ROOM_POS).forEach(([roomId, pos]) => {
+    const isCurrent = S.room === roomId;
+    const visited = S.visited[roomId];
+    const dotColor = isCurrent ? '#ffd54f' : (visited ? '#69f0ae' : '#7c6b9a');
+    const dotSize = isCurrent ? '14px' : '9px';
+    markersHTML += `
+      <div style="position:absolute;left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);pointer-events:none;z-index:2;">
+        <div style="width:${dotSize};height:${dotSize};border-radius:50%;background:${dotColor};box-shadow:0 0 ${isCurrent?'12px':'6px'} ${dotColor};${isCurrent?'animation:mapPulse 1.5s ease-in-out infinite;':''}"></div>
+        <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.65rem;color:${isCurrent?'#ffd54f':'#b39ddb'};background:rgba(10,6,20,0.85);padding:2px 6px;border-radius:8px;">${pos.label}</div>
+      </div>`;
+  });
+
+  overlay.innerHTML = `
+    <div style="position:relative;width:90vw;max-width:500px;max-height:75vh;">
+      <div style="text-align:center;margin-bottom:10px;">
+        <span style="color:#b388ff;font-size:1.1rem;">🗺️ 时间螺旋世界</span>
+        <span style="color:#7c6b9a;font-size:0.7rem;margin-left:8px;">当前：${ROOM_POS[S.room]?.label||'未知'}</span>
+      </div>
+      <div style="position:relative;border:2px solid #3d2e60;border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(124,77,255,0.15);">
+        <img src="images/地图.png" alt="世界地图" style="width:100%;height:auto;display:block;" onerror="this.alt='地图加载失败'">
+        ${markersHTML}
+      </div>
+      <p style="text-align:center;color:#7c6b9a;font-size:0.65rem;margin-top:8px;">
+        🟡 当前位置 &nbsp; 🟢 已探索 &nbsp; ⚫ 未到达
+      </p>
+    </div>
+    <button id="btn-close-map" style="margin-top:16px;padding:8px 28px;border:1px solid #3d2e60;border-radius:20px;background:rgba(16,10,30,0.9);color:#b39ddb;font-size:0.9rem;font-family:inherit;cursor:pointer;">✕ 关闭地图</button>`;
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.id === 'btn-close-map') {
+      overlay.remove();
+    }
+  });
+  ct().appendChild(overlay);
 }
 
 // ========== SAVE / LOAD ==========
