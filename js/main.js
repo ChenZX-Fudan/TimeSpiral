@@ -24,7 +24,7 @@ const ROOM_POS = {
 // ========== CHAPTER DEFINITIONS ==========
 // Each chapter: id, title, objective (for game part), starting room
 const CHAPTERS = [
-  { id:'prologue', title:'序章：时间的织者', obj:'探索时间螺旋中心，与守护者们对话，了解时间之源的故事', room:'spiral_nexus', goal:'talk_all_npcs', goalNPCs:['n36','n5','n18'] },
+  { id:'prologue', title:'序章：时间的织者', obj:'探索时间螺旋中心，与守护者们对话，了解时间之源的故事', room:'spiral_nexus', goal:'talk_all_npcs', goalNPCs:['n36','n5','n18','n0'] },
   { id:'ch1',      title:'第一章：时光的回响',  obj:'前往裂缝区域调查异常，击败暗影斥候', room:'spiral_nexus', goal:'beat_scout' },
   { id:'ch2',      title:'第二章：暗影初现',    obj:'收集时间水晶和水晶钥匙，打开暗影之地的封印', room:'temple_of_time', goal:'shadow_unlock' },
   { id:'ch3',      title:'第三章：风暴前夕',    obj:'深入暗影之地，击败暗影战士', room:'shadow_realm', goal:'beat_boss' },
@@ -48,6 +48,42 @@ const ITEMS = {
   'star_glove':     { id:'star_glove',     name:'星星手套', icon:'🧤', desc:'5号守护者的遗物', usable:false },
 };
 
+// ========== CHAPTER-SPECIFIC NPC DIALOGUES ==========
+function getChapterTalks(chapterId) {
+  const talks = {
+    'ch1': {
+      // --- 螺旋中心 ---
+      'n36': [
+        ['36','12号，你感知到了吗？裂缝区域的异常波动越来越强烈。时间在颤抖。'],
+        ['36','我们的探测器确认了——暗影生物在裂缝区域出没。这是时间禁锢者卷土重来的第一个信号。'],
+        ['36','去裂缝区域调查。如果发现暗影生物，消灭它。这是你作为守护者的第一个任务。'],
+      ],
+      'n5': [
+        ['5','暗影斥候——它们是时间禁锢者的侦察兵。速度快，攻击不致命，但绝不能让它们把情报带回去。'],
+        ['5','战斗中合理使用时间能量。记住，能量节点和时间之泉可以补充能量。'],
+        ['5','我分析过裂缝区域的能量分布：暗影斥候通常潜伏在东北方向，靠近大裂缝的位置。'],
+      ],
+      'n18': [
+        ['18','暗影斥候？听起来好吓人！不过你可是12号啊，我相信你！'],
+        ['18','等等，我有一个天才主意：暗影怕光对吧？裂缝区域…好像…没有光。嗯，当我没说。'],
+        ['18','总之快去快回！我在这里给你加油！✊'],
+      ],
+      'n0': [
+        ['Zero','裂缝……那是时间之战留下的伤疤。即使封印了时间之心，暗影依然在裂缝中滋生。'],
+        ['Zero','12号，你即将面对的是暗影斥候——并不强大，但它是更大的威胁的前兆。'],
+        ['Zero','记住：恐惧是暗影最好的武器。保持内心的光芒，你就不会输。'],
+      ],
+      // --- 裂缝区域 ---
+      'n21': [
+        ['21','12号！你来了！我已经在这里巡逻了好一阵——暗影能量读数一直在飙升。'],
+        ['21','看到东北方向了吗？那就是暗影斥候。我在远处标记了它的位置，就等你来动手。'],
+        ['21','小心那些时间裂缝——靠近它们会让你的能量不稳定。打完就回来，别久留。'],
+      ],
+    },
+  };
+  return talks[chapterId] || {};
+}
+
 // ========== ROOMS (same structure, conditional on chapter) ==========
 function getRoom(chapterId) {
   const base = {
@@ -56,6 +92,13 @@ function getRoom(chapterId) {
       bg:'radial-gradient(ellipse at 50% 40%, #2d1560 0%, #1a1040 40%, #0a0614 100%)',
       entry:'时间螺旋的光芒在头顶缓缓流动。守护者们的基地。',
       spots:[
+        { id:'n0', t:'npc', x:22, y:26, icon:'✨', label:'Zero·初代守护者', img:'0.png',
+          talk:[
+            ['Zero','我是Zero，时间之源创造的第一位守护者。很久以前，我和同伴们建立了这个时间螺旋。'],
+            ['Zero','我创立了「时间共鸣」——当守护者们并肩作战时，彼此的力量与速度都会同步提升。这是我们的信念。'],
+            ['Zero','但暗影从未消失。自称「时间禁锢者」的存在，试图将时间法则囚禁于自己的掌控之中。我们曾将它驱逐，却付出了巨大代价。'],
+            ['Zero','如今它卷土重来了。12号，新的守护者们需要你的勇气。记住：每一个选择都影响着时间的流向。'],
+          ]},
         { id:'n36', t:'npc', x:48, y:30, icon:'🐱', label:'36·领袖', img:'36.png',
           talk:[['36','时间螺旋的平衡正在被打破。新的威胁已经出现。'], ['36','去和其他守护者交谈，了解当前的情况。']] },
         { id:'n5', t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.png',
@@ -143,6 +186,18 @@ function getRoom(chapterId) {
   pathway.spots.push({ id:'ex_p2f', t:'exit', x:85, y:35, icon:'💫', label:'裂缝区域', to:'fracture_zone' });
 
   const rooms = { spiral_nexus:nexus, temple_of_time:temple, fracture_zone:fracture, shadow_realm:shadow, time_pathways:pathway };
+
+  // Apply chapter-specific NPC dialogues
+  const chapterTalks = getChapterTalks(S.chapter);
+  Object.values(rooms).forEach(room => {
+    room.spots = room.spots.map(spot => {
+      if (spot.t === 'npc' && chapterTalks[spot.id]) {
+        return { ...spot, talk: chapterTalks[spot.id] };
+      }
+      return spot;
+    });
+  });
+
   return rooms;
 }
 
@@ -150,6 +205,10 @@ function getRoom(chapterId) {
 
 // --- Title ---
 function showTitle() {
+  // If a save exists, auto-load and skip the title screen
+  const hasSave = !!localStorage.getItem('timespiral_save');
+  if (hasSave) { loadGame(); showChapterSelect(); return; }
+
   ct().style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#0d0620,#1a1040,#2d1560);position:relative;';
   ct().innerHTML = `
     <div style="position:relative;z-index:1;text-align:center;">
@@ -159,17 +218,12 @@ function showTitle() {
       <div style="font-size:2rem;font-weight:700;background:linear-gradient(135deg,#b388ff,#ffd54f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">时间螺旋</div>
       <div style="font-size:0.75rem;color:#7c6b9a;margin-bottom:28px;">T I M E  S P I R A L</div>
       <button id="btn-new" style="display:block;width:180px;padding:12px 0;margin:0 auto 10px;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1rem;font-family:inherit;cursor:pointer;">✨ 开始冒险</button>
-      <button id="btn-load" style="display:block;width:180px;padding:12px 0;margin:0 auto;border:1px solid #3d2e60;border-radius:24px;background:transparent;color:#b39ddb;font-size:1rem;font-family:inherit;cursor:pointer;">📖 继续冒险</button>
     </div>`;
   document.getElementById('btn-new')?.addEventListener('click', () => { resetState(); showChapterSelect(); });
-  document.getElementById('btn-load')?.addEventListener('click', () => {
-    if (loadGame()) { showChapterSelect(); toast('📖 存档已读取'); } else { toast('⚠️ 没有存档'); }
-  });
 }
 
 // --- Chapter Select ---
 function showChapterSelect() {
-  saveGame();
   const mainDone = CHAPTERS.every(ch => S.completed.includes(ch.id));
   const allChapters = [...CHAPTERS, ...EXTRAS];
 
