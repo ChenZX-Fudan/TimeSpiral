@@ -205,9 +205,7 @@ function getRoom(chapterId) {
 
 // --- Title ---
 function showTitle() {
-  // If a save exists, auto-load and skip the title screen
   const hasSave = !!localStorage.getItem('timespiral_save');
-  if (hasSave) { loadGame(); showChapterSelect(); return; }
 
   ct().style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#0d0620,#1a1040,#2d1560);position:relative;';
   ct().innerHTML = `
@@ -218,8 +216,12 @@ function showTitle() {
       <div style="font-size:2rem;font-weight:700;background:linear-gradient(135deg,#b388ff,#ffd54f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">时间螺旋</div>
       <div style="font-size:0.75rem;color:#7c6b9a;margin-bottom:28px;">T I M E  S P I R A L</div>
       <button id="btn-new" style="display:block;width:180px;padding:12px 0;margin:0 auto 10px;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1rem;font-family:inherit;cursor:pointer;">✨ 开始冒险</button>
+      ${hasSave ? '<button id="btn-load" style="display:block;width:180px;padding:12px 0;margin:0 auto;border:1px solid #3d2e60;border-radius:24px;background:transparent;color:#b39ddb;font-size:1rem;font-family:inherit;cursor:pointer;">📖 继续冒险</button>' : ''}
     </div>`;
   document.getElementById('btn-new')?.addEventListener('click', () => { resetState(); showChapterSelect(); });
+  document.getElementById('btn-load')?.addEventListener('click', () => {
+    if (loadGame()) { showChapterSelect(); toast('📖 存档已读取'); } else { toast('⚠️ 没有存档'); }
+  });
 }
 
 // --- Chapter Select ---
@@ -695,9 +697,26 @@ function loadGame() {
     S.energy = d.energy ?? 100; S.inv = d.inv || [];
     S.flags = d.flags || {}; S.visited = d.visited || {};
     S.unlocked = d.unlocked || ['prologue']; S.completed = d.completed || [];
+    repairSave(); // fix corrupted saves from old buggy code
     return true;
   }
   return false;
+}
+
+function repairSave() {
+  const allChs = [...CHAPTERS, ...EXTRAS];
+  let changed = false;
+  S.completed.forEach(chId => {
+    const idx = allChs.findIndex(c => c.id === chId);
+    if (idx >= 0 && idx + 1 < allChs.length) {
+      const nextId = allChs[idx + 1].id;
+      if (!S.unlocked.includes(nextId)) {
+        S.unlocked.push(nextId);
+        changed = true;
+      }
+    }
+  });
+  if (changed) saveGame();
 }
 function resetState() {
   S.chapter = 'prologue'; S.room = 'spiral_nexus'; S.energy = 100;
