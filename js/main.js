@@ -1349,3 +1349,5 @@ fetch('js/data/stories.json')
   .then(d => { STORY_DATA = d; console.log('[TS] Stories preloaded:', Object.keys(d).length, 'chapters'); })
   .catch(e => console.warn('[TS] Story preload failed:', e));
 document.addEventListener('DOMContentLoaded', showTitle);
+// Debug: expose to Console
+window.__TS = { get S() { return S; }, saveGame, showChapterSelect, resetState };
