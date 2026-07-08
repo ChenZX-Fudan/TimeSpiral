@@ -28,14 +28,21 @@ const CHAPTERS = [
   { id:'ch1',      title:'第一章：时光的回响',  obj:'前往裂缝区域调查异常，击败暗影斥候', room:'spiral_nexus', goal:'beat_scout' },
   { id:'ch2',      title:'第二章：暗影初现',    obj:'收集时间水晶和水晶钥匙，打开暗影之地的封印', room:'temple_of_time', goal:'shadow_unlock' },
   { id:'ch3',      title:'第三章：风暴前夕',    obj:'深入暗影之地，击败暗影战士', room:'shadow_realm', goal:'beat_boss' },
-  { id:'ch4',      title:'第四章：决裂时刻',    obj:'穿越时间裂缝，寻找14号的下落', room:'fracture_zone', goal:'find_14' },
-  { id:'ch5',      title:'第五章：拯救之旅',    obj:'前往时间通道，收集足够的能量以备最终决战', room:'time_pathways', goal:'collect_energy' },
+  { id:'ch4',      title:'第四章：决裂时刻',    obj:'穿越时间裂缝，追踪14号的下落', room:'fracture_zone', goal:'found_14' },
+  { id:'ch5',      title:'第五章：拯救之旅',    obj:'前往时间通道收集能量，深入裂缝核心救出14', room:'time_pathways', goal:'rescue_14' },
   { id:'ch6',      title:'第六章：暗影侵袭',    obj:'回到裂缝区域，击败所有暗影生物', room:'fracture_zone', goal:'beat_all_shadows' },
   { id:'ch7',      title:'第七章：守护者的牺牲', obj:'在暗影之地面对最终挑战，领悟36的牺牲', room:'shadow_realm', goal:'honor_36' },
   { id:'ch8',      title:'第八章：时间的重生',  obj:'封印暗影核心，完成时间螺旋的修复', room:'shadow_realm', goal:'sealed_core' },
 ];
 const EXTRAS = [
-  { id:'extra1', title:'番外1：时空旅行插曲', obj:'回到螺旋中心，体验平行时空的趣事', room:'spiral_nexus', goal:'explore_extra' },
+  { id:'extra1', title:'番外1：时空旅行插曲',   obj:'12和队友穿越到平行时间线，遇到严肃版18', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra2', title:'番外2：重逢与抉择',     obj:'12通过时间裂缝回到过去，与导师32重逢', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra3', title:'番外3：预言的开始',     obj:'小12被告知将成为未来领袖，小18疯狂打趣', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra4', title:'番外4：死对头日常',     obj:'小14和小18的日常竞争——火花四溅的滑板对决', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra5', title:'番外5：神殿历史课',     obj:'导师32讲述时间禁锢者的起源与Negative One的背叛', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra6', title:'番外6：神殿大冒险',     obj:'三小只擅闯时间神殿，破解齿轮谜题与时间沙漏', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra7', title:'番外7：穿越小猫探险',   obj:'小12和小18意外穿越到人类世界', room:'spiral_nexus', goal:'read_story' },
+  { id:'extra8', title:'番外8：见到作者啦~',    obj:'三小只穿越到现实世界，见到了infinity本人', room:'spiral_nexus', goal:'read_story' },
 ];
 
 // ========== ITEMS ==========
@@ -46,6 +53,10 @@ const ITEMS = {
   'healing_herb':   { id:'healing_herb',   name:'时间草',   icon:'🌿', desc:'神奇草药，恢复30点时间能量', usable:true },
   'ancient_scroll': { id:'ancient_scroll', name:'古老卷轴', icon:'📜', desc:'记载着对抗暗影方法的古文献', usable:false },
   'star_glove':     { id:'star_glove',     name:'星星手套', icon:'🧤', desc:'5号守护者的遗物', usable:false },
+  'time_shard':     { id:'time_shard',     name:'时间碎片', icon:'💠', desc:'时间螺旋核心的碎片，蕴含纯粹的时间能量', usable:true },
+  'rescue_beacon':  { id:'rescue_beacon',  name:'救援信标', icon:'📡', desc:'能够追踪迷失在时间裂缝中的守护者', usable:true },
+  'memento_36':     { id:'memento_36',     name:'36的遗物', icon:'🌟', desc:'36号守护者留下的时间印记，承载着他的意志', usable:false },
+  'energy_crystal': { id:'energy_crystal', name:'能量水晶', icon:'🔵', desc:'凝聚了时间通道能量的水晶', usable:true },
 };
 
 // ========== CHAPTER-SPECIFIC NPC DIALOGUES ==========
@@ -123,6 +134,190 @@ function getChapterTalks(chapterId) {
         ['36','记住：水晶钥匙不仅是打开封印的工具，它本身就能驱散暗影。这是光的原理。'],
       ],
     },
+    'ch3': {
+      'n36': [
+        ['36','你们做得很好，暂时稳定了裂缝。但暗影的力量远不止如此——它们只是刚刚开始试探。'],
+        ['36','暗影的力量起源于时间之外。在遥远的过去，有一个古老的存在叫"时间禁锢者"，它们被封印在螺旋深处。现在封印正在松动。'],
+        ['36','去吧，击败暗影之地的战士。只有清除盘踞在那里的黑暗，我们才能争取到准备最终决战的时间。'],
+      ],
+      'n5': [
+        ['5','暗影战士就盘踞在暗影之地的中心。它不同于之前的斥候——更强、更快、更狡猾。'],
+        ['5','战斗策略：先用普通攻击试探它的防御模式，然后用时间直觉猛攻。'],
+        ['5','我和36会在后方监控裂缝波动，实时支援你们。放手去战斗吧。'],
+      ],
+      'n9': [
+        ['9','时间波动数据显示——暗影之地的能量密度在过去24小时内提升了300%。'],
+        ['9','时间禁锢者正在苏醒。每击败一个暗影生物，它们的整体力量就会削弱一分。这是消耗战。'],
+        ['9','注意暗影战士的攻击模式。它会在HP低于一半时进入狂暴状态——那时才是真正的考验。'],
+      ],
+      'n11': [
+        ['11','嘿！别这么紧张！虽然听起来像世界末日——好吧，确实有点像。但我们会赢的！'],
+        ['11','我的节奏感能感知到暗影的弱点周期。每5次攻击后它有短暂僵直，那是你的机会窗口。'],
+      ],
+      'n14': [
+        ['14','（踩着滑板转了一圈）暗影战士？听起来是个不错的对手。让我去打头阵！'],
+        ['14','什么？你说要谨慎？拜托，我可是最快的守护者之一。'],
+        ['14','（被5瞪了一眼）……好吧好吧，我会听指挥的。大概。'],
+      ],
+      'n19': [
+        ['19','（从阴影中现身）这些暗影……我能感觉到它们的时间流动与正常时间完全不同。'],
+        ['19','它们存在于时间的夹缝中。普通攻击只能伤到它们的表层——必须用时间能量才能造成实质伤害。'],
+      ],
+      'n24': [
+        ['24','自我介绍一下——我是24，时间的修补者。专门修复你们察觉不到的细微裂缝。'],
+        ['24','但这次的问题不是小裂缝能比的。时间禁锢者的封印正在崩溃。你们必须击败暗影战士，给我争取修复封印的时间。'],
+      ],
+      'n21': [
+        ['21','我在暗影之地外围巡逻了好一阵。暗影战士的巢穴在中心位置——周围布满了小暗影。'],
+        ['21','先把小暗影引开，再集中攻击战士。这是我在探险中学到的战术。'],
+      ],
+      'n18': [
+        ['18','哇，大家都好严肃！放轻松点嘛——不过是一只大黑怪而已。'],
+        ['18','我速度快，可以帮你们吸引它的注意力！不过如果我跑错方向了……呃，那就是战术性撤退。'],
+      ],
+    },
+    'ch4': {
+      'n14': [
+        ['14','（踩着滑板跃上一块岩石）这地方真诡异！我喜欢！'],
+        ['14','裂缝里的时间流好奇怪——有时候快有时候慢。嘿，你说会不会有时空隧道什么的？'],
+        ['14','别担心，我去高处侦察一下！我可是最擅长这个的——（说着就冲了出去）'],
+      ],
+      'n19': [
+        ['19','时间的裂缝……比我们想象的要深。这里有某种力量在试图隐藏它。'],
+        ['19','小心——裂缝里的能量很不稳定。我能感觉到有什么东西在里面潜伏着。'],
+        ['19','14太冲动了。我们得赶快找到他——裂缝的能量正在急剧上升，恐怕很快会……'],
+      ],
+      'n21': [
+        ['21','我来接应你们。裂缝区域最近出现了异常的时间波动——频率和振幅都是我见过最大的。'],
+        ['21','东北方向！我看到14往那边去了——但那边也是裂缝最不稳定的区域。得快！'],
+        ['21','糟糕！裂缝在扩大！有什么东西从里面出来了——这不是普通的暗影！'],
+      ],
+    },
+    'ch5': {
+      'n11': [
+        ['11','我们不能再等了！14还在裂缝的另一端，每一秒暗影的力量都在增强。'],
+        ['11','时间通道里有很多能量节点——我们把它们收集起来，应该能增强时间共鸣的力量。'],
+        ['11','记住节奏！在时间通道中移动时，跟着能量的脉动走，这样最省力。'],
+      ],
+      'n18': [
+        ['18','每次我们追踪暗影，事情总是越变越糟。我不喜欢这感觉——我的尾巴都紧张得打结了！'],
+        ['18','不过放心吧！我速度快，可以帮你吸引那些黑影的注意力。反正它们也抓不到我——大概吧。'],
+        ['18','前面有个能量节点！我看到了！快点收集，我们得攒够能量去救14！'],
+      ],
+      'n19': [
+        ['19','裂缝不只是普通的时间裂痕——它在吞噬时间的根源。14很可能就在裂缝的最深处。'],
+        ['19','收集时间通道的能量是关键。这些能量能帮我们抵御暗影的侵蚀，进入裂缝核心。'],
+        ['19','我已经定位到了14的气息——很微弱，但他还活着。我们需要至少收集3个能量节点才能突破暗影屏障。'],
+      ],
+      'n21': [
+        ['21','时间通道的能量分布我已经标好了。三个主要的能量节点：通道入口、中部漩涡、核心交汇处。'],
+        ['21','收集足够的能量后，去裂缝区域的深处——14就在那里。我会在前面开路。'],
+      ],
+      'n36': [
+        ['36','记住：你们的首要任务是找到14。如果形势变得无法控制，立即撤退。安全至上。'],
+        ['36','我和5在后方监控裂缝波动。一旦你们收集到足够的能量，我们会给出信号。'],
+      ],
+      'n5': [
+        ['5','裂缝的波动与时间螺旋的中心区域有直接关联。越接近核心，裂缝力量越强。'],
+        ['5','我们在后方监控，随时提供支持。记住——先收集能量，再深入裂缝。不要跳步。'],
+      ],
+    },
+    'ch6': {
+      'n36': [
+        ['36','时间螺旋的稳定性取决于时间之心——现在它已被时间禁锢者盯上。这是最后的决战。'],
+        ['36','全体守护者分组行动！12带队深入核心，我和5、9负责外围防守。1、2负责数据监控。'],
+        ['36','这不是一场战斗——这是一场战争。你们必须在三个区域同时击退暗影的进攻。'],
+      ],
+      'n5': [
+        ['5','暗影在三个区域同时发动了进攻：裂缝区域、螺旋中心、暗影之地。你们必须逐个击破。'],
+        ['5','优先清理裂缝区域的暗影——那里是它们涌入的通道。然后是螺旋中心，最后直捣暗影之地。'],
+      ],
+      'n9': [
+        ['9','时间波动已经超出了所有测量范围。整个时间螺旋的结构都在颤抖。'],
+        ['9','战斗顺序很重要：裂缝→螺旋中心→暗影之地。按照这个顺序，暗影的增援会逐级减少。'],
+      ],
+      'n1': [
+        ['1','我回溯了过去——这不是第一次暗影全面入侵。上一次……上一次我们付出了巨大代价。'],
+        ['1','但时间线在变化。这一次，如果你们能在三个区域同时取胜，未来将会不同。'],
+      ],
+      'n2': [
+        ['2','（眼镜反射着时间流的光芒）我在所有时间线中都看到了胜利的可能——但概率只有23%。'],
+        ['2','不过概率不重要。重要的是你们的行动——去吧，改写这个概率。'],
+      ],
+      'n18': [
+        ['18','三场战斗！这可比平时刺激多了！我的尾巴都兴奋得打结了！'],
+        ['18','嘿，来追我啊！我会让这些黑影知道什么叫做"快到看不清"！'],
+      ],
+      'n19': [
+        ['19','暗影的精锐——时间禁锢者的直属部队。它们比之前遇到的任何敌人都要强大。'],
+        ['19','但它们有一个共同的弱点：对时间共鸣极度敏感。利用时间能量攻击，效果加倍。'],
+      ],
+      'n21': [
+        ['21','我侦察了三个区域的情况。裂缝区域有暗影先锋，螺旋中心有暗影指挥官，暗影之地有暗影将军。'],
+        ['21','先打先锋，再打指挥官，最后打将军。这是最有效率的路线。'],
+      ],
+      'n24': [
+        ['24','三处裂缝同时爆发——这种情况我从未见过。时间禁锢者下了血本。'],
+        ['24','但裂缝也是机会。每击败一个暗影精锐，封印就会恢复一部分力量。这是我们的转机。'],
+      ],
+      'n11': [
+        ['11','节奏感告诉我——暗影的进攻有一个固定的波动周期。把握好节奏，你就能预判它们的行动！'],
+        ['11','三场战斗，三个节奏。适应它们，掌控它们，击败它们！'],
+      ],
+    },
+    'ch7': {
+      'n36': [
+        ['36','（站在暗影之地的最深处，暗灰色的毛发在黑暗中泛着微光）时间禁锢者……它几乎完全苏醒了。'],
+        ['36','我创立时间共鸣的那一天就知道——总有一天，需要有人用自己的生命来加固封印。'],
+        ['36','12，你已经成长了。你不再需要我的指导。带领守护者们，继续守护时间螺旋。这是我的选择。'],
+      ],
+      'n5': [
+        ['5','36……他知道这一天会来。但他从来没有告诉过我们——他一直在独自承受。'],
+        ['5','时间禁锢者的核心需要一位守护者的全部时间能量才能封印。36……他打算把自己作为封印。'],
+        ['5','我们不能阻止他。但我们可以陪他到最后——让他知道他不是一个人在战斗。'],
+      ],
+      'n12': [
+        ['12','（泪水在眼眶中打转）36……为什么是你？为什么一定要有人牺牲？'],
+        ['12','我不想接受……但我知道，这是唯一的方法。36教过我——领导者必须做出最艰难的选择。'],
+        ['12','我会继承你的意志。时间螺旋不会倒下。我发誓。'],
+      ],
+      'n19': [
+        ['19','暗影核心的能量正在指数级增长。如果我们不立刻行动，整个时间螺旋将在几分钟内崩塌。'],
+        ['19','36的牺牲不会白费。我会记录下这一刻——让未来的守护者知道，和平是有代价的。'],
+      ],
+    },
+    'ch8': {
+      'n5': [
+        ['5','36已经不在了……但他的时间共鸣依然存在于我们每个人的心中。你能感觉到吗？'],
+        ['5','暗影核心就在前面——封印它的力量，完成36未竟的使命。这是最后一战。'],
+        ['5','用36留给你的遗物。它能引导时间共鸣的力量——那是封印暗影核心的钥匙。'],
+      ],
+      'n12': [
+        ['12','（紧握着36的遗物，感受到一股温暖的力量）36……你还在，对吗？'],
+        ['12','我明白了。时间共鸣不是一个人的力量——它是所有守护者意志的结合。'],
+        ['12','现在，让我们一起完成这件事。为了36，为了时间螺旋，为了每一个相信我们的生命。'],
+      ],
+      'n19': [
+        ['19','暗影核心的能量波动已经稳定下来了——多亏了之前所有的战斗。现在是封印它的最佳时机。'],
+        ['19','激活封印需要按照正确的时间序列。36的遗物会告诉你正确的顺序——跟着它走。'],
+      ],
+      'n21': [
+        ['21','守护者们的士气空前高涨。虽然失去了36，但他的牺牲让我们更团结了。'],
+        ['21','去吧，12。完成封印。我们都相信你。'],
+      ],
+      'n24': [
+        ['24','时间裂缝正在自动愈合——这太不可思议了。暗影核心的力量一旦被封印，整个螺旋就会恢复平衡。'],
+        ['24','36的牺牲激活了时间螺旋的自我修复机制。他是对的——一个人的能量足以改变一切。'],
+      ],
+      'n11': [
+        ['11','最后一战了！我感觉到了——时间的节奏正在恢复正常。36一定也在为我们加油。'],
+        ['11','来吧，让我们把这件事漂亮地完成！36会为我们骄傲的！'],
+      ],
+      'n18': [
+        ['18','（难得地安静了一瞬）……36那个老家伙，居然就这么走了。'],
+        ['18','（然后咧嘴一笑）不过他肯定不希望我们哭哭啼啼的。来吧，让我用最快的速度帮你完成封印！'],
+      ],
+    },
   };
   return talks[chapterId] || {};
 }
@@ -163,6 +358,117 @@ function getChapterSpots(chapterId) {
         { id:'n1',  t:'npc', x:20, y:55, icon:'🐱', label:'1·时间回溯者', img:'1.png' },
         { id:'n2',  t:'npc', x:75, y:55, icon:'🐱', label:'2·时间预知者', img:'2.png' },
         { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
+      ],
+    },
+    'ch3': {
+      'shadow_realm': [
+        { id:'n36', t:'npc', x:48, y:15, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:22, y:30, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n9',  t:'npc', x:75, y:28, icon:'🐱', label:'9·分析师', img:'9.png' },
+        { id:'n11', t:'npc', x:15, y:50, icon:'🐱', label:'11·节奏者', img:'11.png' },
+        { id:'n14', t:'npc', x:78, y:50, icon:'🐱', label:'14·疾风', img:'14.png' },
+        { id:'n19', t:'npc', x:65, y:75, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n24', t:'npc', x:35, y:75, icon:'🐱', label:'24·修补者', img:'24.png' },
+        { id:'n21', t:'npc', x:50, y:62, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n18', t:'npc', x:85, y:68, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'boss1', t:'battle', x:50, y:38, icon:'👹', label:'暗影战士', enemy:{name:'暗影战士·卡奥斯',sprite:'👹',hp:300}, wflag:'beat_boss' },
+        { id:'heal1', t:'heal', x:30, y:20, icon:'💧', label:'暗影之泉', amt:30, txt:'暗影之地中竟然也有时间的清泉……恢复了30点能量。' },
+      ],
+      'spiral_nexus': [
+        { id:'n36', t:'npc', x:50, y:30, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:30, y:55, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
+      ],
+      'fracture_zone': [
+        { id:'n21', t:'npc', x:40, y:40, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'herb1', t:'item', x:65, y:30, icon:'🌿', label:'时间草', iid:'healing_herb' },
+      ],
+    },
+    'ch4': {
+      'fracture_zone': [
+        { id:'n14', t:'npc', x:35, y:30, icon:'🐱', label:'14·疾风', img:'14.png' },
+        { id:'n19', t:'npc', x:60, y:25, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n21', t:'npc', x:20, y:60, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'rift1', t:'info', x:70, y:55, icon:'⚡', label:'时间裂缝', txt:'一道不稳定的时间裂缝。空气中弥漫着黑暗的气息。14号刚才还在附近……现在却不见了踪影。' },
+        { id:'rift2', t:'info', x:45, y:70, icon:'🕳️', label:'深处的裂口', txt:'裂缝深处传来低沉的嗡鸣声。有什么东西正在那里面。一种巨大的吸引力试图将周围的一切拉入其中。' },
+        { id:'beacon_spot', t:'puzzle', x:50, y:45, icon:'📡', label:'时间信号追踪', ptype:'sequence', pdesc:'激活时间信号追踪器，定位14的位置', pflag:'found_14', preward:'rescue_beacon', pmsg:'追踪器锁定了14的时间信号！他还在裂缝深处——还活着！获得「救援信标」📡' },
+      ],
+      'spiral_nexus': [
+        { id:'n36', t:'npc', x:50, y:30, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:30, y:55, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
+      ],
+    },
+    'ch5': {
+      'time_pathways': [
+        { id:'n11', t:'npc', x:25, y:30, icon:'🐱', label:'11·节奏者', img:'11.png' },
+        { id:'n18', t:'npc', x:72, y:25, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'n19', t:'npc', x:50, y:50, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n21', t:'npc', x:30, y:65, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'energy_a', t:'item', x:20, y:45, icon:'💠', label:'能量节点·入口', iid:'energy_crystal' },
+        { id:'energy_b', t:'item', x:60, y:40, icon:'💠', label:'能量节点·中部', iid:'healing_herb' },
+        { id:'energy_c', t:'item', x:80, y:62, icon:'💠', label:'能量节点·核心', iid:'time_shard' },
+        { id:'heal_node', t:'heal', x:45, y:68, icon:'💚', label:'时间能量泉', amt:30, txt:'时间通道的能量泉为你补充了30点时间能量。' },
+      ],
+      'fracture_zone': [
+        { id:'n14_trapped', t:'npc', x:50, y:28, icon:'🐱', label:'14·被困', img:'14.png',
+          talk:[['14','（虚弱地抬起头）12……你们来了……对不起，我太冲动了……'],
+                ['14','暗影的力量在吸取我的能量……但我知道你们会来。你们当然会来。']] },
+        { id:'n21', t:'npc', x:22, y:58, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n19', t:'npc', x:75, y:55, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'boss_rescue', t:'battle', x:50, y:62, icon:'👾', label:'暗影核心守卫', enemy:{name:'暗影核心守卫',sprite:'👾',hp:250}, wflag:'rescue_14' },
+        { id:'rift_center', t:'info', x:35, y:80, icon:'⚡', label:'裂缝核心', txt:'裂缝的中心。暗影的力量在此达到顶峰。14刚才就是被从这里吸进去的。' },
+      ],
+      'spiral_nexus': [
+        { id:'n36', t:'npc', x:50, y:35, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'fountain', t:'heal', x:50, y:72, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
+      ],
+    },
+    'ch6': {
+      'fracture_zone': [
+        { id:'n18', t:'npc', x:25, y:30, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'n19', t:'npc', x:70, y:25, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n21', t:'npc', x:20, y:62, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'battle_vanguard', t:'battle', x:50, y:45, icon:'👾', label:'暗影先锋', enemy:{name:'暗影先锋·先锋官',sprite:'👾',hp:200}, wflag:'beat_vanguard' },
+        { id:'rift_large', t:'info', x:75, y:60, icon:'⚡', label:'大型裂缝', txt:'暗影入侵的主通道。击败暗影先锋可以堵住这个裂缝。' },
+      ],
+      'spiral_nexus': [
+        { id:'n36', t:'npc', x:50, y:22, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:25, y:42, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n9',  t:'npc', x:72, y:40, icon:'🐱', label:'9·分析师', img:'9.png' },
+        { id:'n1',  t:'npc', x:15, y:62, icon:'🐱', label:'1·时间回溯者', img:'1.png' },
+        { id:'n2',  t:'npc', x:80, y:62, icon:'🐱', label:'2·时间预知者', img:'2.png' },
+        { id:'battle_commander', t:'battle', x:50, y:55, icon:'👹', label:'暗影指挥官', enemy:{name:'暗影指挥官·督军',sprite:'👹',hp:280}, wflag:'beat_commander' },
+        { id:'fountain', t:'heal', x:50, y:78, icon:'💧', label:'时间之泉', amt:35, txt:'时间之泉的能量在战斗中格外珍贵，恢复了35点能量。' },
+      ],
+      'shadow_realm': [
+        { id:'n24', t:'npc', x:30, y:32, icon:'🐱', label:'24·修补者', img:'24.png' },
+        { id:'n11', t:'npc', x:68, y:30, icon:'🐱', label:'11·节奏者', img:'11.png' },
+        { id:'n19', t:'npc', x:50, y:68, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'battle_general', t:'battle', x:50, y:42, icon:'👹', label:'暗影将军', enemy:{name:'暗影将军·毁灭者',sprite:'👹',hp:350}, wflag:'beat_general' },
+      ],
+    },
+    'ch7': {
+      'shadow_realm': [
+        { id:'n36', t:'npc', x:50, y:25, icon:'🐱', label:'36·领袖', img:'36.png' },
+        { id:'n5',  t:'npc', x:28, y:50, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n19', t:'npc', x:72, y:52, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'sacrifice_altar', t:'info', x:50, y:55, icon:'💫', label:'封印祭坛', txt:'时间之心的封印已经破碎。需要一位守护者的全部时间能量才能重新激活。36正站在祭坛中央。' },
+        { id:'core_warning', t:'info', x:35, y:72, icon:'⚠️', label:'暗影核心·不稳定', txt:'暗影核心正在剧烈颤抖。时间禁锢者的低语从核心深处传出——"你们永远无法真正封印我……"' },
+        { id:'memento_spot', t:'puzzle', x:50, y:78, icon:'🌟', label:'36的印记', ptype:'memory', pdesc:'接受36的遗志，继承他的力量', pflag:'honor_36', preward:'memento_36', pmsg:'你接过了36的遗物，感受到他留下的温暖力量。"时间螺旋的未来，就交给你了。"36的意志将永远与你同在。' },
+      ],
+    },
+    'ch8': {
+      'shadow_realm': [
+        { id:'n5',  t:'npc', x:25, y:28, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n19', t:'npc', x:72, y:25, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n21', t:'npc', x:18, y:55, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n24', t:'npc', x:80, y:55, icon:'🐱', label:'24·修补者', img:'24.png' },
+        { id:'n11', t:'npc', x:35, y:72, icon:'🐱', label:'11·节奏者', img:'11.png' },
+        { id:'n18', t:'npc', x:68, y:72, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'core', t:'puzzle', x:50, y:50, icon:'🕳️', label:'暗影核心', ptype:'sequence', pdesc:'用正确的时间序列封印暗影核心', pflag:'sealed_core', pmsg:'暗影核心被成功封印！时间螺旋的光芒重新照耀世界。36的牺牲没有白费。' },
+        { id:'tribute_36', t:'info', x:50, y:32, icon:'🌟', label:'36的纪念', txt:'这里曾经是36站立的地方。他的时间共鸣仍然在空气中回荡——温暖而坚定。每一个守护者都能感受到他的存在。' },
       ],
     },
   };
@@ -328,62 +634,111 @@ function showTitle() {
 // --- Chapter Select ---
 function showChapterSelect() {
   const mainDone = CHAPTERS.every(ch => S.completed.includes(ch.id));
-  const allChapters = [...CHAPTERS, ...EXTRAS];
+  const showExtras = !!S.flags._extrasRevealed;
+  // Main chapters always visible; extras only after easter egg
+  const mainChapters = CHAPTERS;
+  const extraChapters = showExtras ? EXTRAS : [];
 
   let html = `<div style="width:100%;height:100%;overflow-y:auto;background:linear-gradient(180deg,#0d0620,#1a1040 30%,#2d1560 100%);padding:40px 20px;">`;
-  html += `<h2 style="text-align:center;color:#b388ff;margin-bottom:4px;font-size:1.4rem;">📖 选择章节</h2>`;
-  html += `<p style="text-align:center;color:#7c6b9a;font-size:0.75rem;margin-bottom:24px;">完成当前章节后解锁下一章</p>`;
+  html += `<h2 id="chapter-title" style="text-align:center;color:#b388ff;margin-bottom:4px;font-size:1.4rem;cursor:default;">📖 选择章节</h2>`;
+  html += `<p id="chapter-hint" style="text-align:center;color:#7c6b9a;font-size:0.75rem;margin-bottom:24px;">完成当前章节后解锁下一章</p>`;
 
-  allChapters.forEach((ch, i) => {
+  // Render main chapters
+  mainChapters.forEach(ch => {
     const unlocked = S.unlocked.includes(ch.id);
     const completed = S.completed.includes(ch.id);
-    const isExtra = EXTRAS.some(e => e.id === ch.id);
-
-    // Extras only unlock after all 8 main chapters done
-    const extraLocked = isExtra && !mainDone;
-    const actuallyUnlocked = unlocked && !extraLocked;
-
     let cardStyle = 'background:rgba(35,24,56,0.8);border:1px solid #3d2e60;';
     if (completed) cardStyle += 'border-color:#69f0ae;opacity:0.85;';
-    if (!actuallyUnlocked) cardStyle += 'opacity:0.4;';
+    if (!unlocked) cardStyle += 'opacity:0.4;';
     if (S.chapter === ch.id && !completed) cardStyle += 'border-color:#ffd54f;box-shadow:0 0 16px rgba(255,213,79,0.25);';
-
-    const statusIcon = completed ? '✅' : (actuallyUnlocked ? '▶️' : '🔒');
-    const statusText = completed ? '已完成' : (extraLocked ? '完成主线解锁' : (actuallyUnlocked ? '点击开始' : '未解锁'));
-
-    html += `<div class="ch-card" data-ch="${ch.id}" style="${cardStyle}padding:14px;border-radius:10px;margin-bottom:10px;cursor:${actuallyUnlocked?'pointer':'default'};display:flex;align-items:center;gap:10px;transition:all 0.2s;">
+    const statusIcon = completed ? '✅' : (unlocked ? '▶️' : '🔒');
+    const statusText = completed ? '已完成' : (unlocked ? '点击开始' : '未解锁');
+    html += `<div class="ch-card" data-ch="${ch.id}" style="${cardStyle}padding:14px;border-radius:10px;margin-bottom:10px;cursor:${unlocked?'pointer':'default'};display:flex;align-items:center;gap:10px;transition:all 0.2s;">
       <span style="font-size:1.6rem;flex-shrink:0;">${statusIcon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:0.95rem;color:#ede7f6;font-weight:${ch.id===S.chapter?'600':'400'};">${ch.title}</div>
-        <div style="font-size:0.7rem;color:#7c6b9a;margin-top:2px;">${ch.obj}</div>
-      </div>
+      <div style="flex:1;min-width:0;"><div style="font-size:0.95rem;color:#ede7f6;">${ch.title}</div><div style="font-size:0.7rem;color:#7c6b9a;margin-top:2px;">${ch.obj}</div></div>
       <span style="font-size:0.7rem;color:${completed?'#69f0ae':'#b39ddb'};flex-shrink:0;">${statusText}</span>
     </div>`;
   });
+
+  // Extras section (hidden until easter egg triggered)
+  if (mainDone && !showExtras) {
+    // Hint that there's a secret
+    html += `<p id="easter-hint" style="text-align:center;color:#7c6b9a;font-size:0.65rem;margin:20px 0 8px;opacity:0.6;">💡 完成全部主线后，据说标题里藏着秘密……多点点看？</p>`;
+  }
+
+  if (showExtras) {
+    html += `<div style="margin:20px 0 8px;padding-top:16px;border-top:1px dashed #3d2e60;">
+      <h3 style="text-align:center;color:#ffd54f;font-size:1.1rem;margin-bottom:12px;">📚 番外篇 · 对话小说</h3>
+    </div>`;
+    extraChapters.forEach(ch => {
+      const completed = S.completed.includes(ch.id);
+      let cardStyle = 'background:rgba(45,20,60,0.8);border:1px solid #7c4dff;';
+      if (completed) cardStyle += 'border-color:#69f0ae;opacity:0.85;';
+      const statusIcon = completed ? '✅' : '📖';
+      const statusText = completed ? '已读' : '阅读';
+      html += `<div class="ch-card ch-extra" data-ch="${ch.id}" style="${cardStyle}padding:12px;border-radius:10px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.2s;">
+        <span style="font-size:1.4rem;flex-shrink:0;">${statusIcon}</span>
+        <div style="flex:1;min-width:0;"><div style="font-size:0.9rem;color:#ede7f6;">${ch.title}</div><div style="font-size:0.65rem;color:#7c6b9a;margin-top:2px;">${ch.obj}</div></div>
+        <span style="font-size:0.65rem;color:#b39ddb;flex-shrink:0;">${statusText}</span>
+      </div>`;
+    });
+  }
 
   // Reset button
   html += `<div style="text-align:center;margin-top:20px;">
     <button id="btn-reset" style="padding:8px 20px;border:1px solid #3d2e60;border-radius:16px;background:transparent;color:#7c6b9a;font-size:0.8rem;font-family:inherit;cursor:pointer;">🔄 重置进度</button>
   </div>`;
-
   html += `</div>`;
   ct().innerHTML = html;
 
-  // Event delegation: single listener on the container
+  // Easter egg: click title 3 times to reveal extras
+  let titleClicks = 0;
+  const titleEl = document.getElementById('chapter-title');
+  if (titleEl && mainDone && !showExtras) {
+    titleEl.style.cursor = 'pointer';
+    titleEl.addEventListener('click', () => {
+      titleClicks++;
+      if (titleClicks === 1) {
+        const hint = document.getElementById('chapter-hint');
+        if (hint) hint.textContent = '🤔 再试试？';
+      } else if (titleClicks === 2) {
+        const hint = document.getElementById('chapter-hint');
+        if (hint) hint.textContent = '😺 快了！就差一点...';
+      } else if (titleClicks >= 3) {
+        S.flags._extrasRevealed = true;
+        saveGame();
+        showChapterSelect();
+        toast('✨ 发现隐藏的番外篇！');
+      }
+    });
+  }
+
+  // Event delegation for chapter cards
   ct().addEventListener('click', function chCardClick(e) {
     const card = e.target.closest('.ch-card');
     if (!card) return;
     const chId = card.dataset.ch;
     if (!chId) return;
-    console.log('[TS] Card clicked:', chId, 'unlocked:', S.unlocked.includes(chId));
-    const ch = allChapters.find(c => c.id === chId);
-    if (!ch) return;
     const isExtra = EXTRAS.some(ex => ex.id === chId);
-    if (!S.unlocked.includes(chId)) { console.warn('[TS] Locked:', chId); return; }
+    const allChs = [...CHAPTERS, ...EXTRAS];
+    const ch = allChs.find(c => c.id === chId);
+    if (!ch) return;
+
+    // Check unlock: extras always accessible after reveal, mains need unlock
+    if (!isExtra && !S.unlocked.includes(chId)) { return; }
     if (isExtra && !mainDone) { toast('完成所有8章主线后解锁番外'); return; }
+
     S.chapter = chId;
     S.room = ch.room;
-    // Show story reader - use preloaded data or fall through to game
+    saveGame();
+
+    // Extras → visual novel viewer
+    if (isExtra) {
+      showNovelViewer(ch);
+      return;
+    }
+
+    // Main chapters → story reader + game
     const storyText = STORY_DATA[chId]?.text || '';
     ct().innerHTML = `
       <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;">
@@ -401,8 +756,7 @@ function showChapterSelect() {
       </div>`;
     document.getElementById('btn-skip-story')?.addEventListener('click', () => startChapterGame(ch));
     document.getElementById('btn-enter-game')?.addEventListener('click', () => startChapterGame(ch));
-
-    // Async load story if not preloaded yet (non-blocking)
+    // Async load story if not preloaded
     if (!storyText) {
       fetch('js/data/stories.json').then(r => r.json()).then(data => {
         STORY_DATA = data;
@@ -466,6 +820,102 @@ async function showStoryReader(chapter) {
       contentEl.innerHTML = '<p style="text-align:center;color:#7c6b9a;padding:40px;">暂无文本，直接进入游戏吧</p>';
     }
   }
+}
+
+// --- Visual Novel Viewer (for extras) ---
+function showNovelViewer(chapter) {
+  const text = STORY_DATA[chapter.id]?.text || '';
+  if (!text) {
+    // Try fetching if not preloaded
+    fetch('js/data/stories.json').then(r => r.json()).then(data => {
+      STORY_DATA = data;
+      showNovelViewer(chapter);
+    }).catch(() => {
+      toast('⚠️ 故事加载失败');
+      showChapterSelect();
+    });
+    return;
+  }
+
+  // Split into segments: double newline separates scenes, single newline within scenes
+  const rawSegments = text.split(/\n{2,}/).filter(s => s.trim());
+  let idx = 0;
+
+  function renderSegment() {
+    if (idx >= rawSegments.length) {
+      // Finished — mark as read and return to chapter select
+      if (!S.completed.includes(chapter.id)) {
+        S.completed.push(chapter.id);
+        saveGame();
+      }
+      toast('📖 阅读完毕！');
+      showChapterSelect();
+      return;
+    }
+
+    const seg = rawSegments[idx].trim();
+
+    // Try to detect dialogue: look for character name patterns like "小12（语气）：" or "32导师："
+    const dialogueMatch = seg.match(/^([^(：:\n]+)(?:（[^）]*）)?[：:]\s*(.*)/s);
+    let viewHTML;
+
+    if (dialogueMatch) {
+      const speaker = dialogueMatch[1].trim();
+      const msg = dialogueMatch[2].replace(/\n/g, '<br>');
+      // Try to find a matching character image
+      const imgName = speaker.replace(/^小/, 'x').replace(/导师/, '').replace(/导师$/, '');
+      const imgPath = `images/${imgName}.png`;
+
+      viewHTML = `
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;" onclick="arguments[0].stopPropagation?.()">
+          <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+            <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
+            <span style="color:#7c6b9a;font-size:0.7rem;">${idx+1}/${rawSegments.length}</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px;">
+            <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 16px rgba(179,136,255,0.3);background:#2d1f5a;display:flex;align-items:center;justify-content:center;">
+              <img src="${imgPath}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${speaker==='旁白'?'✨':'🐱'}';this.remove()">
+            </div>
+            <div style="font-size:0.85rem;color:#ffd54f;font-weight:600;">${speaker}</div>
+            <div style="max-width:450px;width:90%;background:rgba(35,24,56,0.9);border:1px solid #3d2e60;border-radius:12px;padding:16px 20px;text-align:center;">
+              <div style="font-size:0.95rem;color:#ede7f6;line-height:1.8;">${msg}</div>
+            </div>
+          </div>
+          <div style="padding:14px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+            <span style="color:#7c6b9a;font-size:0.75rem;">点击任意位置继续 ▸</span>
+          </div>
+        </div>`;
+    } else {
+      // Narration / description — no character portrait
+      viewHTML = `
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;">
+          <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+            <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
+            <span style="color:#7c6b9a;font-size:0.7rem;">${idx+1}/${rawSegments.length}</span>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div style="max-width:480px;width:90%;background:rgba(35,24,56,0.8);border:1px solid #3d2e60;border-radius:12px;padding:20px 24px;">
+              <div style="font-size:0.95rem;color:#ede7f6;line-height:2;text-indent:2em;">${seg.replace(/\n/g, '<br>')}</div>
+            </div>
+          </div>
+          <div style="padding:14px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+            <span style="color:#7c6b9a;font-size:0.75rem;">点击任意位置继续 ▸</span>
+          </div>
+        </div>`;
+    }
+
+    ct().innerHTML = viewHTML;
+
+    // Click anywhere to advance
+    const clickHandler = () => {
+      idx++;
+      renderSegment();
+    };
+    ct().addEventListener('click', clickHandler, { once: true });
+  }
+
+  // Back button always available at the top
+  renderSegment();
 }
 
 // --- Game ---
@@ -716,6 +1166,13 @@ function startBattle(spot) {
 function checkGoal(flag) {
   const ch = [...CHAPTERS, ...EXTRAS].find(c => c.id === S.chapter);
   if (!ch) return;
+  // ch6 special: need all 3 shadow commanders beaten
+  if (ch.goal === 'beat_all_shadows') {
+    if (S.flags.beat_vanguard && S.flags.beat_commander && S.flags.beat_general) {
+      completeChapter();
+    }
+    return;
+  }
   if (flag === ch.goal || (ch.goal === 'talk_all_npcs' && S.goalNPCs.every(id => S.chapterNPCsTalked[id]))) {
     completeChapter();
   }
