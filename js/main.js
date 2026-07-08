@@ -844,20 +844,26 @@ function showNovelViewer(chapter) {
   function getPortrait(speaker) {
     // Strip parentheticals first
     const name = speaker.replace(/（[^）]*）/, '').trim();
-    // Try x-prefixed (young version) first, then adult, then fallback
-    const candidates = [];
-    if (/^小/.test(name)) {
-      candidates.push('x' + name.replace(/^小/, ''));
-      candidates.push(name.replace(/^小/, ''));
-    } else if (/^\d+/.test(name)) {
-      candidates.push(name.match(/^\d+/)[0]);
-    } else if (name === 'infinity' || name === '旁白') {
-      return null; // no image for these
-    }
-    // Try first candidate
-    if (candidates.length > 0) {
-      return `images/${candidates[0]}.png`;
-    }
+
+    // Direct mapping for extra chapter characters
+    const MAP = {
+      '12': '12.png', '小12': 'x12.png',
+      '14': '14.png', '小14': 'x14.png',
+      '18': '18.png', '小18': 'x18.png',
+      '32': '32.png',
+      'infinity': 'infinity.png',
+      '旁白': null,
+    };
+    if (name in MAP) return MAP[name] ? `images/${MAP[name]}` : null;
+
+    // Handle names with titles: "导师32", "32导师" → extract number
+    const num = name.match(/\d+/);
+    if (num) return `images/${num[0]}.png`;
+
+    // "小" prefix fallback: "小11" → "x11.png"
+    const xiaoMatch = name.match(/^小(\d+)/);
+    if (xiaoMatch) return `images/x${xiaoMatch[1]}.png`;
+
     return null;
   }
 
