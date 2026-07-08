@@ -826,7 +826,6 @@ async function showStoryReader(chapter) {
 function showNovelViewer(chapter) {
   const text = STORY_DATA[chapter.id]?.text || '';
   if (!text) {
-    // Try fetching if not preloaded
     fetch('js/data/stories.json').then(r => r.json()).then(data => {
       STORY_DATA = data;
       showNovelViewer(chapter);
@@ -837,13 +836,33 @@ function showNovelViewer(chapter) {
     return;
   }
 
-  // Split into segments: double newline separates scenes, single newline within scenes
+  // Split into segments: double newline separates scenes
   const rawSegments = text.split(/\n{2,}/).filter(s => s.trim());
   let idx = 0;
 
+  // Map speaker name to best available image
+  function getPortrait(speaker) {
+    // Strip parentheticals first
+    const name = speaker.replace(/（[^）]*）/, '').trim();
+    // Try x-prefixed (young version) first, then adult, then fallback
+    const candidates = [];
+    if (/^小/.test(name)) {
+      candidates.push('x' + name.replace(/^小/, ''));
+      candidates.push(name.replace(/^小/, ''));
+    } else if (/^\d+/.test(name)) {
+      candidates.push(name.match(/^\d+/)[0]);
+    } else if (name === 'infinity' || name === '旁白') {
+      return null; // no image for these
+    }
+    // Try first candidate
+    if (candidates.length > 0) {
+      return `images/${candidates[0]}.png`;
+    }
+    return null;
+  }
+
   function renderSegment() {
     if (idx >= rawSegments.length) {
-      // Finished — mark as read and return to chapter select
       if (!S.completed.includes(chapter.id)) {
         S.completed.push(chapter.id);
         saveGame();
@@ -855,26 +874,28 @@ function showNovelViewer(chapter) {
 
     const seg = rawSegments[idx].trim();
 
-    // Try to detect dialogue: look for character name patterns like "小12（语气）：" or "32导师："
+    // Detect dialogue: "Name（语气）：message" or "Name：message"
     const dialogueMatch = seg.match(/^([^(：:\n]+)(?:（[^）]*）)?[：:]\s*(.*)/s);
     let viewHTML;
+    const portraitImg = dialogueMatch ? getPortrait(dialogueMatch[1]) : null;
 
     if (dialogueMatch) {
       const speaker = dialogueMatch[1].trim();
       const msg = dialogueMatch[2].replace(/\n/g, '<br>');
-      // Try to find a matching character image
-      const imgName = speaker.replace(/^小/, 'x').replace(/导师/, '').replace(/导师$/, '');
-      const imgPath = `images/${imgName}.png`;
+      const portraitHTML = portraitImg
+        ? `<img src="${portraitImg}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
+        : '<span style="font-size:2.5rem;">🐱</span>';
 
       viewHTML = `
-        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;" onclick="arguments[0].stopPropagation?.()">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;">
           <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
             <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
+            <button id="btn-novel-back" style="padding:4px 12px;border:1px solid #3d2e60;border-radius:12px;background:rgba(16,10,30,0.9);color:#b39ddb;font-size:0.75rem;font-family:inherit;cursor:pointer;">← 返回</button>
             <span style="color:#7c6b9a;font-size:0.7rem;">${idx+1}/${rawSegments.length}</span>
           </div>
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px;">
-            <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 16px rgba(179,136,255,0.3);background:#2d1f5a;display:flex;align-items:center;justify-content:center;">
-              <img src="${imgPath}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${speaker==='旁白'?'✨':'🐱'}';this.remove()">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px;">
+            <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 16px rgba(179,136,255,0.3);background:#2d1f5a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${portraitHTML}
             </div>
             <div style="font-size:0.85rem;color:#ffd54f;font-weight:600;">${speaker}</div>
             <div style="max-width:450px;width:90%;background:rgba(35,24,56,0.9);border:1px solid #3d2e60;border-radius:12px;padding:16px 20px;text-align:center;">
@@ -886,11 +907,12 @@ function showNovelViewer(chapter) {
           </div>
         </div>`;
     } else {
-      // Narration / description — no character portrait
+      // Narration — no character portrait
       viewHTML = `
         <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;">
           <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
             <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
+            <button id="btn-novel-back" style="padding:4px 12px;border:1px solid #3d2e60;border-radius:12px;background:rgba(16,10,30,0.9);color:#b39ddb;font-size:0.75rem;font-family:inherit;cursor:pointer;">← 返回</button>
             <span style="color:#7c6b9a;font-size:0.7rem;">${idx+1}/${rawSegments.length}</span>
           </div>
           <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px;">
@@ -906,15 +928,20 @@ function showNovelViewer(chapter) {
 
     ct().innerHTML = viewHTML;
 
-    // Click anywhere to advance
-    const clickHandler = () => {
+    // Back button
+    document.getElementById('btn-novel-back')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showChapterSelect();
+    });
+
+    // Click anywhere (except back button) to advance
+    ct().addEventListener('click', function advance() {
+      ct().removeEventListener('click', advance);
       idx++;
       renderSegment();
-    };
-    ct().addEventListener('click', clickHandler, { once: true });
+    });
   }
 
-  // Back button always available at the top
   renderSegment();
 }
 
