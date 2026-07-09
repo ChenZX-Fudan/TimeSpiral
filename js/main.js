@@ -12,7 +12,7 @@ const S = {
   completed: []
 };
 
-// ========== MAP POSITIONS (百分比, 对应 地图.png 上的房间位置) ==========
+// ========== MAP POSITIONS (百分比, 对应 地图.webp 上的房间位置) ==========
 const ROOM_POS = {
   'spiral_nexus':    { x:50, y:50, label:'🌀 螺旋中心' },
   'temple_of_time':  { x:72, y:28, label:'🏛️ 时间神殿' },
@@ -327,11 +327,11 @@ function getChapterSpots(chapterId) {
   const spots = {
     'ch1': {
       'spiral_nexus': [
-        { id:'n36', t:'npc', x:48, y:20, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:20, y:42, icon:'🐱', label:'5·战术官', img:'5.png' },
-        { id:'n1',  t:'npc', x:30, y:62, icon:'🐱', label:'1·时间回溯者', img:'1.png' },
-        { id:'n2',  t:'npc', x:72, y:58, icon:'🐱', label:'2·时间预知者', img:'2.png' },
-        { id:'n9',  t:'npc', x:78, y:35, icon:'🐱', label:'9·分析师', img:'9.png' },
+        { id:'n36', t:'npc', x:48, y:20, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:20, y:42, icon:'🐱', label:'5·战术官', img:'5.webp' },
+        { id:'n1',  t:'npc', x:30, y:62, icon:'🐱', label:'1·时间回溯者', img:'1.webp' },
+        { id:'n2',  t:'npc', x:72, y:58, icon:'🐱', label:'2·时间预知者', img:'2.webp' },
+        { id:'n9',  t:'npc', x:78, y:35, icon:'🐱', label:'9·分析师', img:'9.webp' },
         { id:'fountain', t:'heal', x:50, y:72, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
       'temple_of_time': [
@@ -341,119 +341,119 @@ function getChapterSpots(chapterId) {
     },
     'ch2': {
       'temple_of_time': [
-        { id:'n5',  t:'npc', x:30, y:28, icon:'🐱', label:'5·战术官', img:'5.png' },
-        { id:'n9',  t:'npc', x:70, y:30, icon:'🐱', label:'9·分析师', img:'9.png' },
-        { id:'n18', t:'npc', x:50, y:50, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'n5',  t:'npc', x:30, y:28, icon:'🐱', label:'5·战术官', img:'5.webp' },
+        { id:'n9',  t:'npc', x:70, y:30, icon:'🐱', label:'9·分析师', img:'9.webp' },
+        { id:'n18', t:'npc', x:50, y:50, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
         { id:'altar', t:'puzzle', x:50, y:72, icon:'🔮', label:'水晶祭坛', ptype:'memory', pdesc:'激活祭坛上的时间符文', pflag:'solved_altar', preward:'time_crystal', pmsg:'时间水晶在祭坛上凝聚成形！获得「时间水晶」💎' },
         { id:'scroll', t:'item', x:20, y:65, icon:'📚', label:'古老书架', iid:'ancient_scroll' },
       ],
       'fracture_zone': [
-        { id:'n21', t:'npc', x:25, y:40, icon:'🐱', label:'21·探险家', img:'21.png' },
-        { id:'n18', t:'npc', x:50, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'n21', t:'npc', x:25, y:40, icon:'🐱', label:'21·探险家', img:'21.webp' },
+        { id:'n18', t:'npc', x:50, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
         { id:'forge', t:'npc', x:65, y:35, icon:'🔥', label:'时间熔炉', talk:[['旁白','一座古老的熔炉。将时间水晶放入其中，可以锻造出水晶钥匙。']] },
         { id:'rift', t:'info', x:40, y:75, icon:'⚡', label:'巨大裂缝', txt:'一道巨大的时间裂缝。黑暗能量不断从中渗出。暗影的力量在此聚集。' },
       ],
       'spiral_nexus': [
-        { id:'n36', t:'npc', x:45, y:25, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n1',  t:'npc', x:20, y:55, icon:'🐱', label:'1·时间回溯者', img:'1.png' },
-        { id:'n2',  t:'npc', x:75, y:55, icon:'🐱', label:'2·时间预知者', img:'2.png' },
+        { id:'n36', t:'npc', x:45, y:25, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n1',  t:'npc', x:20, y:55, icon:'🐱', label:'1·时间回溯者', img:'1.webp' },
+        { id:'n2',  t:'npc', x:75, y:55, icon:'🐱', label:'2·时间预知者', img:'2.webp' },
         { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
     },
     'ch3': {
       'shadow_realm': [
-        { id:'n36', t:'npc', x:48, y:15, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:22, y:30, icon:'🐱', label:'5·战术官', img:'5.png' },
-        { id:'n9',  t:'npc', x:75, y:28, icon:'🐱', label:'9·分析师', img:'9.png' },
-        { id:'n11', t:'npc', x:15, y:50, icon:'🐱', label:'11·节奏者', img:'11.png' },
-        { id:'n14', t:'npc', x:78, y:50, icon:'🐱', label:'14·疾风', img:'14.png' },
-        { id:'n19', t:'npc', x:65, y:75, icon:'🐱', label:'19·影行者', img:'19.png' },
-        { id:'n24', t:'npc', x:35, y:75, icon:'🐱', label:'24·修补者', img:'24.png' },
-        { id:'n21', t:'npc', x:50, y:62, icon:'🐱', label:'21·探险家', img:'21.png' },
-        { id:'n18', t:'npc', x:85, y:68, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'n36', t:'npc', x:48, y:15, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:22, y:30, icon:'🐱', label:'5·战术官', img:'5.webp' },
+        { id:'n9',  t:'npc', x:75, y:28, icon:'🐱', label:'9·分析师', img:'9.webp' },
+        { id:'n11', t:'npc', x:15, y:50, icon:'🐱', label:'11·节奏者', img:'11.webp' },
+        { id:'n14', t:'npc', x:78, y:50, icon:'🐱', label:'14·疾风', img:'14.webp' },
+        { id:'n19', t:'npc', x:65, y:75, icon:'🐱', label:'19·影行者', img:'19.webp' },
+        { id:'n24', t:'npc', x:35, y:75, icon:'🐱', label:'24·修补者', img:'24.webp' },
+        { id:'n21', t:'npc', x:50, y:62, icon:'🐱', label:'21·探险家', img:'21.webp' },
+        { id:'n18', t:'npc', x:85, y:68, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
         { id:'boss1', t:'battle', x:50, y:38, icon:'👹', label:'暗影战士', enemy:{name:'暗影战士·卡奥斯',sprite:'👹',hp:300}, wflag:'beat_boss' },
         { id:'heal1', t:'heal', x:30, y:20, icon:'💧', label:'暗影之泉', amt:30, txt:'暗影之地中竟然也有时间的清泉……恢复了30点能量。' },
       ],
       'spiral_nexus': [
-        { id:'n36', t:'npc', x:50, y:30, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:30, y:55, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n36', t:'npc', x:50, y:30, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:30, y:55, icon:'🐱', label:'5·战术官', img:'5.webp' },
         { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
       'fracture_zone': [
-        { id:'n21', t:'npc', x:40, y:40, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n21', t:'npc', x:40, y:40, icon:'🐱', label:'21·探险家', img:'21.webp' },
         { id:'herb1', t:'item', x:65, y:30, icon:'🌿', label:'时间草', iid:'healing_herb' },
       ],
     },
     'ch4': {
       'fracture_zone': [
-        { id:'n14', t:'npc', x:35, y:30, icon:'🐱', label:'14·疾风', img:'14.png' },
-        { id:'n19', t:'npc', x:60, y:25, icon:'🐱', label:'19·影行者', img:'19.png' },
-        { id:'n21', t:'npc', x:20, y:60, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n14', t:'npc', x:35, y:30, icon:'🐱', label:'14·疾风', img:'14.webp' },
+        { id:'n19', t:'npc', x:60, y:25, icon:'🐱', label:'19·影行者', img:'19.webp' },
+        { id:'n21', t:'npc', x:20, y:60, icon:'🐱', label:'21·探险家', img:'21.webp' },
         { id:'rift1', t:'info', x:70, y:55, icon:'⚡', label:'时间裂缝', txt:'一道不稳定的时间裂缝。空气中弥漫着黑暗的气息。14号刚才还在附近……现在却不见了踪影。' },
         { id:'rift2', t:'info', x:45, y:70, icon:'🕳️', label:'深处的裂口', txt:'裂缝深处传来低沉的嗡鸣声。有什么东西正在那里面。一种巨大的吸引力试图将周围的一切拉入其中。' },
         { id:'beacon_spot', t:'puzzle', x:50, y:45, icon:'📡', label:'时间信号追踪', ptype:'sequence', pdesc:'激活时间信号追踪器，定位14的位置', pflag:'found_14', preward:'rescue_beacon', pmsg:'追踪器锁定了14的时间信号！他还在裂缝深处——还活着！获得「救援信标」📡' },
       ],
       'spiral_nexus': [
-        { id:'n36', t:'npc', x:50, y:30, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:30, y:55, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n36', t:'npc', x:50, y:30, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:30, y:55, icon:'🐱', label:'5·战术官', img:'5.webp' },
         { id:'fountain', t:'heal', x:50, y:70, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
     },
     'ch5': {
       'time_pathways': [
-        { id:'n11', t:'npc', x:25, y:30, icon:'🐱', label:'11·节奏者', img:'11.png' },
-        { id:'n18', t:'npc', x:72, y:25, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
-        { id:'n19', t:'npc', x:50, y:50, icon:'🐱', label:'19·影行者', img:'19.png' },
-        { id:'n21', t:'npc', x:30, y:65, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n11', t:'npc', x:25, y:30, icon:'🐱', label:'11·节奏者', img:'11.webp' },
+        { id:'n18', t:'npc', x:72, y:25, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
+        { id:'n19', t:'npc', x:50, y:50, icon:'🐱', label:'19·影行者', img:'19.webp' },
+        { id:'n21', t:'npc', x:30, y:65, icon:'🐱', label:'21·探险家', img:'21.webp' },
         { id:'energy_a', t:'item', x:20, y:45, icon:'💠', label:'能量节点·入口', iid:'energy_crystal' },
         { id:'energy_b', t:'item', x:60, y:40, icon:'💠', label:'能量节点·中部', iid:'healing_herb' },
         { id:'energy_c', t:'item', x:80, y:62, icon:'💠', label:'能量节点·核心', iid:'time_shard' },
         { id:'heal_node', t:'heal', x:45, y:68, icon:'💚', label:'时间能量泉', amt:30, txt:'时间通道的能量泉为你补充了30点时间能量。' },
       ],
       'fracture_zone': [
-        { id:'n14_trapped', t:'npc', x:50, y:28, icon:'🐱', label:'14·被困', img:'14.png',
+        { id:'n14_trapped', t:'npc', x:50, y:28, icon:'🐱', label:'14·被困', img:'14.webp',
           talk:[['14','（虚弱地抬起头）12……你们来了……对不起，我太冲动了……'],
                 ['14','暗影的力量在吸取我的能量……但我知道你们会来。你们当然会来。']] },
-        { id:'n21', t:'npc', x:22, y:58, icon:'🐱', label:'21·探险家', img:'21.png' },
-        { id:'n19', t:'npc', x:75, y:55, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n21', t:'npc', x:22, y:58, icon:'🐱', label:'21·探险家', img:'21.webp' },
+        { id:'n19', t:'npc', x:75, y:55, icon:'🐱', label:'19·影行者', img:'19.webp' },
         { id:'boss_rescue', t:'battle', x:50, y:62, icon:'👾', label:'暗影核心守卫', enemy:{name:'暗影核心守卫',sprite:'👾',hp:250}, wflag:'rescue_14' },
         { id:'rift_center', t:'info', x:35, y:80, icon:'⚡', label:'裂缝核心', txt:'裂缝的中心。暗影的力量在此达到顶峰。14刚才就是被从这里吸进去的。' },
       ],
       'spiral_nexus': [
-        { id:'n36', t:'npc', x:50, y:35, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.png' },
+        { id:'n36', t:'npc', x:50, y:35, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.webp' },
         { id:'fountain', t:'heal', x:50, y:72, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
     },
     'ch6': {
       'fracture_zone': [
-        { id:'n18', t:'npc', x:25, y:30, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
-        { id:'n19', t:'npc', x:70, y:25, icon:'🐱', label:'19·影行者', img:'19.png' },
-        { id:'n21', t:'npc', x:20, y:62, icon:'🐱', label:'21·探险家', img:'21.png' },
+        { id:'n18', t:'npc', x:25, y:30, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
+        { id:'n19', t:'npc', x:70, y:25, icon:'🐱', label:'19·影行者', img:'19.webp' },
+        { id:'n21', t:'npc', x:20, y:62, icon:'🐱', label:'21·探险家', img:'21.webp' },
         { id:'battle_vanguard', t:'battle', x:50, y:45, icon:'👾', label:'暗影先锋', enemy:{name:'暗影先锋·先锋官',sprite:'👾',hp:200}, wflag:'beat_vanguard' },
         { id:'rift_large', t:'info', x:75, y:60, icon:'⚡', label:'大型裂缝', txt:'暗影入侵的主通道。击败暗影先锋可以堵住这个裂缝。' },
       ],
       'spiral_nexus': [
-        { id:'n36', t:'npc', x:50, y:22, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:25, y:42, icon:'🐱', label:'5·战术官', img:'5.png' },
-        { id:'n9',  t:'npc', x:72, y:40, icon:'🐱', label:'9·分析师', img:'9.png' },
-        { id:'n1',  t:'npc', x:15, y:62, icon:'🐱', label:'1·时间回溯者', img:'1.png' },
-        { id:'n2',  t:'npc', x:80, y:62, icon:'🐱', label:'2·时间预知者', img:'2.png' },
+        { id:'n36', t:'npc', x:50, y:22, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:25, y:42, icon:'🐱', label:'5·战术官', img:'5.webp' },
+        { id:'n9',  t:'npc', x:72, y:40, icon:'🐱', label:'9·分析师', img:'9.webp' },
+        { id:'n1',  t:'npc', x:15, y:62, icon:'🐱', label:'1·时间回溯者', img:'1.webp' },
+        { id:'n2',  t:'npc', x:80, y:62, icon:'🐱', label:'2·时间预知者', img:'2.webp' },
         { id:'battle_commander', t:'battle', x:50, y:55, icon:'👹', label:'暗影指挥官', enemy:{name:'暗影指挥官·督军',sprite:'👹',hp:280}, wflag:'beat_commander' },
         { id:'fountain', t:'heal', x:50, y:78, icon:'💧', label:'时间之泉', amt:35, txt:'时间之泉的能量在战斗中格外珍贵，恢复了35点能量。' },
       ],
       'shadow_realm': [
-        { id:'n24', t:'npc', x:30, y:32, icon:'🐱', label:'24·修补者', img:'24.png' },
-        { id:'n11', t:'npc', x:68, y:30, icon:'🐱', label:'11·节奏者', img:'11.png' },
-        { id:'n19', t:'npc', x:50, y:68, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n24', t:'npc', x:30, y:32, icon:'🐱', label:'24·修补者', img:'24.webp' },
+        { id:'n11', t:'npc', x:68, y:30, icon:'🐱', label:'11·节奏者', img:'11.webp' },
+        { id:'n19', t:'npc', x:50, y:68, icon:'🐱', label:'19·影行者', img:'19.webp' },
         { id:'battle_general', t:'battle', x:50, y:42, icon:'👹', label:'暗影将军', enemy:{name:'暗影将军·毁灭者',sprite:'👹',hp:350}, wflag:'beat_general' },
       ],
     },
     'ch7': {
       'shadow_realm': [
-        { id:'n36', t:'npc', x:50, y:25, icon:'🐱', label:'36·领袖', img:'36.png' },
-        { id:'n5',  t:'npc', x:28, y:50, icon:'🐱', label:'5·战术官', img:'5.png' },
-        { id:'n19', t:'npc', x:72, y:52, icon:'🐱', label:'19·影行者', img:'19.png' },
+        { id:'n36', t:'npc', x:50, y:25, icon:'🐱', label:'36·领袖', img:'36.webp' },
+        { id:'n5',  t:'npc', x:28, y:50, icon:'🐱', label:'5·战术官', img:'5.webp' },
+        { id:'n19', t:'npc', x:72, y:52, icon:'🐱', label:'19·影行者', img:'19.webp' },
         { id:'sacrifice_altar', t:'info', x:50, y:55, icon:'💫', label:'封印祭坛', txt:'时间之心的封印已经破碎。需要一位守护者的全部时间能量才能重新激活。36正站在祭坛中央。' },
         { id:'core_warning', t:'info', x:35, y:72, icon:'⚠️', label:'暗影核心·不稳定', txt:'暗影核心正在剧烈颤抖。时间禁锢者的低语从核心深处传出——"你们永远无法真正封印我……"' },
         { id:'memento_spot', t:'puzzle', x:50, y:78, icon:'🌟', label:'36的印记', ptype:'memory', pdesc:'接受36的遗志，继承他的力量', pflag:'honor_36', preward:'memento_36', pmsg:'你接过了36的遗物，感受到他留下的温暖力量。"时间螺旋的未来，就交给你了。"36的意志将永远与你同在。' },
@@ -461,12 +461,12 @@ function getChapterSpots(chapterId) {
     },
     'ch8': {
       'shadow_realm': [
-        { id:'n5',  t:'npc', x:25, y:28, icon:'🐱', label:'5·战术官', img:'5.png' },
-        { id:'n19', t:'npc', x:72, y:25, icon:'🐱', label:'19·影行者', img:'19.png' },
-        { id:'n21', t:'npc', x:18, y:55, icon:'🐱', label:'21·探险家', img:'21.png' },
-        { id:'n24', t:'npc', x:80, y:55, icon:'🐱', label:'24·修补者', img:'24.png' },
-        { id:'n11', t:'npc', x:35, y:72, icon:'🐱', label:'11·节奏者', img:'11.png' },
-        { id:'n18', t:'npc', x:68, y:72, icon:'🐱', label:'18·搞笑担当', img:'18.png' },
+        { id:'n5',  t:'npc', x:25, y:28, icon:'🐱', label:'5·战术官', img:'5.webp' },
+        { id:'n19', t:'npc', x:72, y:25, icon:'🐱', label:'19·影行者', img:'19.webp' },
+        { id:'n21', t:'npc', x:18, y:55, icon:'🐱', label:'21·探险家', img:'21.webp' },
+        { id:'n24', t:'npc', x:80, y:55, icon:'🐱', label:'24·修补者', img:'24.webp' },
+        { id:'n11', t:'npc', x:35, y:72, icon:'🐱', label:'11·节奏者', img:'11.webp' },
+        { id:'n18', t:'npc', x:68, y:72, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
         { id:'core', t:'puzzle', x:50, y:50, icon:'🕳️', label:'暗影核心', ptype:'sequence', pdesc:'用正确的时间序列封印暗影核心', pflag:'sealed_core', pmsg:'暗影核心被成功封印！时间螺旋的光芒重新照耀世界。36的牺牲没有白费。' },
         { id:'tribute_36', t:'info', x:50, y:32, icon:'🌟', label:'36的纪念', txt:'这里曾经是36站立的地方。他的时间共鸣仍然在空气中回荡——温暖而坚定。每一个守护者都能感受到他的存在。' },
       ],
@@ -483,18 +483,18 @@ function getRoom(chapterId) {
       bg:'radial-gradient(ellipse at 50% 40%, #2d1560 0%, #1a1040 40%, #0a0614 100%)',
       entry:'时间螺旋的光芒在头顶缓缓流动。守护者们的基地。',
       spots:[
-        { id:'n0', t:'npc', x:22, y:26, icon:'✨', label:'Zero·初代守护者', img:'0.png',
+        { id:'n0', t:'npc', x:22, y:26, icon:'✨', label:'Zero·初代守护者', img:'0.webp',
           talk:[
             ['Zero','我是Zero，时间之源创造的第一位守护者。很久以前，我和同伴们建立了这个时间螺旋。'],
             ['Zero','我创立了「时间共鸣」——当守护者们并肩作战时，彼此的力量与速度都会同步提升。这是我们的信念。'],
             ['Zero','但暗影从未消失。自称「时间禁锢者」的存在，试图将时间法则囚禁于自己的掌控之中。我们曾将它驱逐，却付出了巨大代价。'],
             ['Zero','如今它卷土重来了。12号，新的守护者们需要你的勇气。记住：每一个选择都影响着时间的流向。'],
           ]},
-        { id:'n36', t:'npc', x:48, y:30, icon:'🐱', label:'36·领袖', img:'36.png',
+        { id:'n36', t:'npc', x:48, y:30, icon:'🐱', label:'36·领袖', img:'36.webp',
           talk:[['36','时间螺旋的平衡正在被打破。新的威胁已经出现。'], ['36','去和其他守护者交谈，了解当前的情况。']] },
-        { id:'n5', t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.png',
+        { id:'n5', t:'npc', x:30, y:60, icon:'🐱', label:'5·战术官', img:'5.webp',
           talk:[['5','12！裂缝区域出现了异常波动。我们需要立刻行动。'], ['5','先去神殿找到时间水晶——那是我们对抗暗影的关键。']] },
-        { id:'n18', t:'npc', x:70, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.png',
+        { id:'n18', t:'npc', x:70, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.webp',
           talk:[['18','嘿！别愁眉苦脸的！虽然暗影很可怕，但有我在呢！']] },
         { id:'fountain', t:'heal', x:50, y:68, icon:'💧', label:'时间之泉', amt:40, txt:'时间之泉的暖流涌入体内，恢复了40点时间能量。' },
       ],
@@ -507,7 +507,7 @@ function getRoom(chapterId) {
       spots:[
         { id:'altar', t:'puzzle', x:50, y:45, icon:'🔮', label:'水晶祭坛', ptype:'memory', pdesc:'激活祭坛上的时间符文', pflag:'solved_altar', preward:'time_crystal', pmsg:'时间水晶在祭坛上凝聚成形！获得「时间水晶」💎' },
         { id:'scroll', t:'item', x:25, y:35, icon:'📚', label:'古老书架', iid:'ancient_scroll' },
-        { id:'n9', t:'npc', x:70, y:50, icon:'🐱', label:'9·分析师', img:'9.png',
+        { id:'n9', t:'npc', x:70, y:50, icon:'🐱', label:'9·分析师', img:'9.webp',
           talk:[['9','暗影的力量在干扰时间流动。'], ['9','把时间水晶带到裂缝区域的熔炉，可以锻造出水晶钥匙。']] },
       ],
       items:{ 'ancient_scroll':{ txt:'卷轴上写着："暗影惧怕水晶之光。将时间水晶带到裂缝区域的熔炉，锻造水晶钥匙。"', flag:'read_scroll' } },
@@ -521,7 +521,7 @@ function getRoom(chapterId) {
         { id:'forge', t:'npc', x:35, y:40, icon:'🔥', label:'时间熔炉', talk:[['旁白','一座古老的熔炉，可以用时间水晶锻造钥匙。']] },
         { id:'battle1', t:'battle', x:65, y:35, icon:'👾', label:'暗影斥候', enemy:{name:'暗影斥候',sprite:'👾',hp:120}, wflag:'beat_scout' },
         { id:'rift', t:'info', x:50, y:65, icon:'⚡', label:'巨大裂缝', txt:'一道巨大的时间裂缝。黑暗能量不断从中渗出。需要水晶钥匙才能彻底封印。' },
-        { id:'n21', t:'npc', x:80, y:55, icon:'🐱', label:'21·探险家', img:'21.png', talk:[['21','小心！这里的暗影比之前遇到的更强大。']] },
+        { id:'n21', t:'npc', x:80, y:55, icon:'🐱', label:'21·探险家', img:'21.webp', talk:[['21','小心！这里的暗影比之前遇到的更强大。']] },
       ],
       items:{
         'time_crystal':{ txt:'将时间水晶放入熔炉……水晶钥匙锻造成功！🔑 封印被解开了！', flag:'shadow_unlock' },
@@ -546,7 +546,7 @@ function getRoom(chapterId) {
       entry:'发光的时间流如同河流般贯穿空间。守护者们通过这些通道快速移动。',
       spots:[
         { id:'herb', t:'item', x:30, y:40, icon:'🌿', label:'时间草', iid:'healing_herb' },
-        { id:'n11', t:'npc', x:60, y:30, icon:'🐱', label:'11·节奏者', img:'11.png', talk:[['11','通道里的时间草可以恢复能量！']] },
+        { id:'n11', t:'npc', x:60, y:30, icon:'🐱', label:'11·节奏者', img:'11.webp', talk:[['11','通道里的时间草可以恢复能量！']] },
         { id:'heal1', t:'heal', x:50, y:55, icon:'💚', label:'能量节点', amt:20, txt:'时间通道的能量节点为你补充了20点时间能量。' },
       ],
       items:{ 'healing_herb':{ txt:'吃下时间草，时间能量恢复了30点。', flag:'used_herb' } },
@@ -618,7 +618,7 @@ function showTitle() {
   ct().innerHTML = `
     <div style="position:relative;z-index:1;text-align:center;">
       <div style="width:180px;height:250px;margin:0 auto 20px;border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(255,213,79,0.2),0 8px 24px rgba(0,0,0,0.5);">
-        <img src="images/封面1.jpg" alt="封面" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:#2d1f5a;>⏳</div>'">
+        <img src="images/封面1.webp" alt="封面" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:#2d1f5a;>⏳</div>'">
       </div>
       <div style="font-size:2rem;font-weight:700;background:linear-gradient(135deg,#b388ff,#ffd54f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">时间螺旋</div>
       <div style="font-size:0.75rem;color:#7c6b9a;margin-bottom:28px;">T I M E  S P I R A L</div>
@@ -660,12 +660,6 @@ function showChapterSelect() {
     </div>`;
   });
 
-  // Extras section (hidden until easter egg triggered)
-  if (mainDone && !showExtras) {
-    // Hint that there's a secret
-    html += `<p id="easter-hint" style="text-align:center;color:#7c6b9a;font-size:0.65rem;margin:20px 0 8px;opacity:0.6;">💡 完成全部主线后，据说标题里藏着秘密……多点点看？</p>`;
-  }
-
   if (showExtras) {
     html += `<div style="margin:20px 0 8px;padding-top:16px;border-top:1px dashed #3d2e60;">
       <h3 style="text-align:center;color:#ffd54f;font-size:1.1rem;margin-bottom:12px;">📚 番外篇 · 对话小说</h3>
@@ -691,26 +685,9 @@ function showChapterSelect() {
   html += `</div>`;
   ct().innerHTML = html;
 
-  // Easter egg: click title 3 times to reveal extras
-  let titleClicks = 0;
-  const titleEl = document.getElementById('chapter-title');
-  if (titleEl && mainDone && !showExtras) {
-    titleEl.style.cursor = 'pointer';
-    titleEl.addEventListener('click', () => {
-      titleClicks++;
-      if (titleClicks === 1) {
-        const hint = document.getElementById('chapter-hint');
-        if (hint) hint.textContent = '🤔 再试试？';
-      } else if (titleClicks === 2) {
-        const hint = document.getElementById('chapter-hint');
-        if (hint) hint.textContent = '😺 快了！就差一点...';
-      } else if (titleClicks >= 3) {
-        S.flags._extrasRevealed = true;
-        saveGame();
-        showChapterSelect();
-        toast('✨ 发现隐藏的番外篇！');
-      }
-    });
+  // Easter egg popup: all 8 chapters completed → show modal to unlock extras
+  if (mainDone && !showExtras) {
+    setTimeout(() => showEasterEggModal(), 400);
   }
 
   // Event delegation for chapter cards
@@ -822,7 +799,41 @@ async function showStoryReader(chapter) {
   }
 }
 
+// --- Easter Egg Modal ---
+function showEasterEggModal() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:400;background:rgba(5,3,12,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;animation:fadeIn 0.4s ease;';
+  overlay.innerHTML = `
+    <div style="font-size:3.5rem;margin-bottom:16px;animation:battleFloat 2s ease-in-out infinite;">🎁</div>
+    <div style="font-size:1.4rem;color:#ffd54f;font-weight:700;margin-bottom:8px;">🎉 恭喜通关全部章节！</div>
+    <div style="font-size:0.9rem;color:#b39ddb;margin-bottom:6px;text-align:center;max-width:300px;">你已完成时间螺旋的全部主线故事</div>
+    <div style="font-size:0.85rem;color:#7c6b9a;margin-bottom:24px;text-align:center;max-width:300px;">发现了隐藏的番外篇 · 对话小说，要解锁吗？</div>
+    <button id="btn-unlock-extras" style="width:200px;padding:14px 0;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1.05rem;font-family:inherit;cursor:pointer;">✨ 解锁番外篇</button>
+    <button id="btn-skip-extras" style="margin-top:12px;padding:8px 20px;border:1px solid #3d2e60;border-radius:16px;background:transparent;color:#7c6b9a;font-size:0.8rem;font-family:inherit;cursor:pointer;">以后再说</button>`;
+  ct().appendChild(overlay);
+
+  document.getElementById('btn-unlock-extras')?.addEventListener('click', () => {
+    S.flags._extrasRevealed = true;
+    saveGame();
+    overlay.remove();
+    showChapterSelect();
+    toast('✨ 番外篇已解锁！');
+  });
+  document.getElementById('btn-skip-extras')?.addEventListener('click', () => {
+    overlay.remove();
+    toast('💡 随时可以从章节选择再次查看');
+  });
+  // Also dismiss on clicking the dark background
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      toast('💡 随时可以从章节选择再次查看');
+    }
+  });
+}
+
 // --- Visual Novel Viewer (for extras) ---
+// Scroll-accumulation mode: click to append next segment, previous text scrolls up
 function showNovelViewer(chapter) {
   const text = STORY_DATA[chapter.id]?.text || '';
   if (!text) {
@@ -842,113 +853,110 @@ function showNovelViewer(chapter) {
 
   // Map speaker name to best available image
   function getPortrait(speaker) {
-    // Strip parentheticals first
     const name = speaker.replace(/（[^）]*）/, '').trim();
-
-    // Direct mapping for extra chapter characters
     const MAP = {
-      '12': '12.png', '小12': 'x12.png',
-      '14': '14.png', '小14': 'x14.png',
-      '18': '18.png', '小18': 'x18.png',
-      '32': '32.png',
-      'infinity': 'infinity.png',
+      '12': '12.webp', '小12': 'x12.webp',
+      '14': '14.webp', '小14': 'x14.webp',
+      '18': '18.webp', '小18': 'x18.webp',
+      '32': '32.webp',
+      'infinity': 'infinity.webp',
       '旁白': null,
     };
     if (name in MAP) return MAP[name] ? `images/${MAP[name]}` : null;
-
-    // Handle names with titles: "导师32", "32导师" → extract number
+    // "小" prefix — check BEFORE generic number extraction
+    const xiaoMatch = name.match(/小(\d+)/);
+    if (xiaoMatch) return `images/x${xiaoMatch[1]}.webp`;
     const num = name.match(/\d+/);
-    if (num) return `images/${num[0]}.png`;
-
-    // "小" prefix fallback: "小11" → "x11.png"
-    const xiaoMatch = name.match(/^小(\d+)/);
-    if (xiaoMatch) return `images/x${xiaoMatch[1]}.png`;
-
+    if (num) return `images/${num[0]}.webp`;
     return null;
   }
 
-  function renderSegment() {
+  // Build HTML for a single segment
+  function buildSegmentHTML(seg) {
+    const dialogueMatch = seg.match(/^([^(：:\n]+)(?:（[^）]*）)?[：:]\s*(.*)/s);
+
+    if (dialogueMatch) {
+      const speaker = dialogueMatch[1].trim();
+      const msg = dialogueMatch[2].replace(/\n/g, '<br>');
+      const portraitImg = getPortrait(speaker);
+      const portraitHTML = portraitImg
+        ? `<img src="${portraitImg}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
+        : '<span style="font-size:2rem;">🐱</span>';
+
+      return `
+        <div class="novel-seg" style="display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
+          <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 12px rgba(179,136,255,0.25);background:#2d1f5a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            ${portraitHTML}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.8rem;color:#ffd54f;font-weight:600;margin-bottom:4px;">${speaker}</div>
+            <div style="font-size:0.9rem;color:#ede7f6;line-height:1.75;">${msg}</div>
+          </div>
+        </div>`;
+    } else {
+      // Narration — plain text, no portrait
+      return `
+        <div class="novel-seg" style="padding:14px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
+          <div style="font-size:0.9rem;color:#c5bfd6;line-height:1.9;text-indent:2em;">${seg.replace(/\n/g, '<br>')}</div>
+        </div>`;
+    }
+  }
+
+  // Build the full view structure
+  ct().innerHTML = `
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;">
+      <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);flex-shrink:0;">
+        <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
+        <button id="btn-novel-back" style="padding:4px 12px;border:1px solid #3d2e60;border-radius:12px;background:rgba(16,10,30,0.9);color:#b39ddb;font-size:0.75rem;font-family:inherit;cursor:pointer;">← 返回</button>
+        <span id="novel-progress" style="color:#7c6b9a;font-size:0.7rem;">0/${rawSegments.length}</span>
+      </div>
+      <div id="novel-content" style="flex:1;overflow-y:auto;padding:16px 20px;">
+      </div>
+      <div id="novel-footer" style="padding:14px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);flex-shrink:0;cursor:pointer;">
+        <span style="color:#7c6b9a;font-size:0.75rem;">点击继续 ▸</span>
+      </div>
+    </div>`;
+
+  const contentEl = document.getElementById('novel-content');
+  const progressEl = document.getElementById('novel-progress');
+  const footerEl = document.getElementById('novel-footer');
+
+  function appendNextSegment() {
     if (idx >= rawSegments.length) {
       if (!S.completed.includes(chapter.id)) {
         S.completed.push(chapter.id);
         saveGame();
       }
+      footerEl.innerHTML = '<span style="color:#69f0ae;font-size:0.8rem;">📖 阅读完毕 ✨</span>';
+      footerEl.style.cursor = 'default';
+      footerEl.onclick = null;
       toast('📖 阅读完毕！');
-      showChapterSelect();
       return;
     }
 
     const seg = rawSegments[idx].trim();
+    contentEl.insertAdjacentHTML('beforeend', buildSegmentHTML(seg));
+    idx++;
+    progressEl.textContent = `${idx}/${rawSegments.length}`;
 
-    // Detect dialogue: "Name（语气）：message" or "Name：message"
-    const dialogueMatch = seg.match(/^([^(：:\n]+)(?:（[^）]*）)?[：:]\s*(.*)/s);
-    let viewHTML;
-    const portraitImg = dialogueMatch ? getPortrait(dialogueMatch[1]) : null;
-
-    if (dialogueMatch) {
-      const speaker = dialogueMatch[1].trim();
-      const msg = dialogueMatch[2].replace(/\n/g, '<br>');
-      const portraitHTML = portraitImg
-        ? `<img src="${portraitImg}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
-        : '<span style="font-size:2.5rem;">🐱</span>';
-
-      viewHTML = `
-        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;">
-          <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
-            <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
-            <button id="btn-novel-back" style="padding:4px 12px;border:1px solid #3d2e60;border-radius:12px;background:rgba(16,10,30,0.9);color:#b39ddb;font-size:0.75rem;font-family:inherit;cursor:pointer;">← 返回</button>
-            <span style="color:#7c6b9a;font-size:0.7rem;">${idx+1}/${rawSegments.length}</span>
-          </div>
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px;">
-            <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 16px rgba(179,136,255,0.3);background:#2d1f5a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              ${portraitHTML}
-            </div>
-            <div style="font-size:0.85rem;color:#ffd54f;font-weight:600;">${speaker}</div>
-            <div style="max-width:450px;width:90%;background:rgba(35,24,56,0.9);border:1px solid #3d2e60;border-radius:12px;padding:16px 20px;text-align:center;">
-              <div style="font-size:0.95rem;color:#ede7f6;line-height:1.8;">${msg}</div>
-            </div>
-          </div>
-          <div style="padding:14px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
-            <span style="color:#7c6b9a;font-size:0.75rem;">点击任意位置继续 ▸</span>
-          </div>
-        </div>`;
-    } else {
-      // Narration — no character portrait
-      viewHTML = `
-        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;position:relative;">
-          <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
-            <span style="color:#b388ff;font-weight:600;font-size:0.9rem;">📖 ${chapter.title}</span>
-            <button id="btn-novel-back" style="padding:4px 12px;border:1px solid #3d2e60;border-radius:12px;background:rgba(16,10,30,0.9);color:#b39ddb;font-size:0.75rem;font-family:inherit;cursor:pointer;">← 返回</button>
-            <span style="color:#7c6b9a;font-size:0.7rem;">${idx+1}/${rawSegments.length}</span>
-          </div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px;">
-            <div style="max-width:480px;width:90%;background:rgba(35,24,56,0.8);border:1px solid #3d2e60;border-radius:12px;padding:20px 24px;">
-              <div style="font-size:0.95rem;color:#ede7f6;line-height:2;text-indent:2em;">${seg.replace(/\n/g, '<br>')}</div>
-            </div>
-          </div>
-          <div style="padding:14px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
-            <span style="color:#7c6b9a;font-size:0.75rem;">点击任意位置继续 ▸</span>
-          </div>
-        </div>`;
-    }
-
-    ct().innerHTML = viewHTML;
-
-    // Back button
-    document.getElementById('btn-novel-back')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showChapterSelect();
-    });
-
-    // Click anywhere (except back button) to advance
-    ct().addEventListener('click', function advance() {
-      ct().removeEventListener('click', advance);
-      idx++;
-      renderSegment();
-    });
+    // Auto-scroll to bottom so new content is visible
+    setTimeout(() => {
+      contentEl.scrollTop = contentEl.scrollHeight;
+    }, 60);
   }
 
-  renderSegment();
+  // Click footer or content area to advance
+  footerEl.addEventListener('click', appendNextSegment);
+  contentEl.addEventListener('click', appendNextSegment);
+
+  // Back button
+  document.getElementById('btn-novel-back')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showChapterSelect();
+  });
+
+  // Load first segment immediately
+  appendNextSegment();
 }
 
 // --- Game ---
@@ -1307,7 +1315,7 @@ function showMap() {
         <span style="color:#7c6b9a;font-size:0.7rem;margin-left:8px;">当前：${ROOM_POS[S.room]?.label||'未知'}</span>
       </div>
       <div style="position:relative;border:2px solid #3d2e60;border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(124,77,255,0.15);">
-        <img src="images/地图.png" alt="世界地图" style="width:100%;height:auto;display:block;" onerror="this.alt='地图加载失败'">
+        <img src="images/地图.webp" alt="世界地图" style="width:100%;height:auto;display:block;" onerror="this.alt='地图加载失败'">
         ${markersHTML}
       </div>
       <p style="text-align:center;color:#7c6b9a;font-size:0.65rem;margin-top:8px;">
