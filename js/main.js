@@ -873,33 +873,154 @@ function showNovelViewer(chapter) {
 
   // Build HTML for a single segment
   function buildSegmentHTML(seg) {
-    const dialogueMatch = seg.match(/^([^(：:\n]+)(?:（[^）]*）)?[：:]\s*(.*)/s);
+    const trimmed = seg.trim();
 
-    if (dialogueMatch) {
-      const speaker = dialogueMatch[1].trim();
-      const msg = dialogueMatch[2].replace(/\n/g, '<br>');
+    // --- shared render helpers ---
+    function dialogueCard(speaker, msg, extraNarration) {
       const portraitImg = getPortrait(speaker);
       const portraitHTML = portraitImg
-        ? `<img src="${portraitImg}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
+        ? `<img src="${portraitImg}" alt="${speaker||'?'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
         : '<span style="font-size:2rem;">🐱</span>';
-
+      const speakerLabel = speaker || '???';
+      const narrationBlock = extraNarration ? `
+        <div style="font-size:0.85rem;color:#c5bfd6;line-height:1.85;margin-top:8px;text-indent:1em;">${extraNarration.replace(/\n/g, '<br>')}</div>` : '';
       return `
-        <div class="novel-seg" style="display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
-          <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 12px rgba(179,136,255,0.25);background:#2d1f5a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            ${portraitHTML}
+        <div class="novel-seg" style="padding:16px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid #b388ff;box-shadow:0 0 12px rgba(179,136,255,0.25);background:#2d1f5a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${portraitHTML}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.8rem;color:#ffd54f;font-weight:600;margin-bottom:4px;">${speakerLabel}</div>
+              <div style="font-size:0.9rem;color:#ede7f6;line-height:1.75;">${msg}</div>
+            </div>
           </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:0.8rem;color:#ffd54f;font-weight:600;margin-bottom:4px;">${speaker}</div>
-            <div style="font-size:0.9rem;color:#ede7f6;line-height:1.75;">${msg}</div>
-          </div>
-        </div>`;
-    } else {
-      // Narration — plain text, no portrait
-      return `
-        <div class="novel-seg" style="padding:14px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
-          <div style="font-size:0.9rem;color:#c5bfd6;line-height:1.9;text-indent:2em;">${seg.replace(/\n/g, '<br>')}</div>
+          ${narrationBlock}
         </div>`;
     }
+
+    function narrationCard(text) {
+      return `
+        <div class="novel-seg" style="padding:14px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
+          <div style="font-size:0.9rem;color:#c5bfd6;line-height:1.9;text-indent:2em;">${text.replace(/\n/g, '<br>')}</div>
+        </div>`;
+    }
+
+    // Try to extract a speaker name from the beginning of a string.
+    // Returns {speaker, rest} or null.
+    function extractSpeaker(text) {
+      let s = text.trim();
+      // Skip leading punctuation / filler words that appear before the speaker name
+      // e.g. "。小12发现了…" → skip "。"
+      s = s.replace(/^[。，、；：！？….—\-—\s]+/, '').trim();
+      if (!s) return null;
+      // "小12" / "小18" pattern (young characters — keep "小" prefix)
+      let m = s.match(/^(小\d+)/);
+      if (m) return { speaker: m[1], rest: s.substring(m[0].length).trim() };
+      // Pure number: 12, 18, 5, 32, etc.
+      m = s.match(/^(\d+)/);
+      if (m) return { speaker: m[1], rest: s.substring(m[0].length).trim() };
+      // "那只18" / "那个18" / "这位32" / "平行时空的18" — strip prefix
+      m = s.match(/^(?:那只|那个|这位|那位|平行时空的)\s*(\d+)/);
+      if (m) return { speaker: m[1], rest: s.substring(m[0].length).trim() };
+      // "小女孩" → infinity (author self-insert in extra7/extra8)
+      m = s.match(/^(小女孩)/);
+      if (m) return { speaker: 'infinity', rest: s.substring(m[0].length).trim() };
+      // Named characters
+      m = s.match(/^(Zero|Infinity|infinity)/i);
+      if (m) return { speaker: m[1], rest: s.substring(m[0].length).trim() };
+      // Loose fallback: speaker number embedded in description text
+      // (e.g. "而那位严肃版的18则冷冷地说道" → 18)
+      m = s.match(/(小\d+)/);
+      if (m) return { speaker: m[1], rest: s.substring(m.index + m[0].length).trim() };
+      m = s.match(/(?<!\d)(\d{1,2})(?!\d)/);
+      if (m) return { speaker: m[1], rest: s.substring(m.index + m[0].length).trim() };
+      return null;
+    }
+
+    // Last-resort: scan the text for a known speaker number
+    // Used when the speaker isn't the first word after the quote
+    // (e.g. "一个紫红色的猫咪…完全不像是18" → 18)
+    function deepScanSpeaker(text) {
+      // "小\d+" anywhere in the first ~60 chars
+      let m = text.match(/小(\d+)/);
+      if (m) return '小' + m[1];
+      // "的18" / "的32" — possessive form usually indicates the speaker
+      m = text.match(/[的]\s*(\d+)/);
+      if (m) return m[1];
+      // Standalone 2-digit number in first 40 chars (32, 18, 14, 12 etc.)
+      m = text.substring(0, 40).match(/(?:^|[^\d])(\d{2})(?:[^\d]|$)/);
+      if (m) return m[1];
+      return null;
+    }
+
+    // ============================================================
+    // Pattern 1 — Leading-quote prose: “dialogue” speaker …
+    //   e.g.  “这是螺旋中心？”12疑惑地环顾四周
+    //   e.g.  “如果他们成功了……”小12若有所思地问。
+    //   e.g.  “12，小心点。”5的声音从后方传来
+    //   NOTE: must come BEFORE colon-pattern to avoid false positives
+    //   Uses .+? (non-greedy) to handle data where “ is used for both
+    //   open and close quotes (U+201C ≈ U+201C mixed in data).
+    // ============================================================
+    const leadingQuote = trimmed.match(/^[“””](.+?)[“””]\s*/);
+    if (leadingQuote) {
+      const dialogue = leadingQuote[1];
+      let after = trimmed.substring(leadingQuote[0].length);
+
+      const ext = extractSpeaker(after);
+      if (ext) {
+        return dialogueCard(ext.speaker, dialogue, ext.rest || null);
+      }
+      // Speaker not at start of after-text — try deep scan
+      // (e.g. “一个紫红色的猫咪…18” / “那个声音…32”)
+      const deep = deepScanSpeaker(after);
+      if (deep) {
+        return dialogueCard(deep, dialogue, after || null);
+      }
+      // Truly unknown — still show as dialogue card (writing technique)
+      return dialogueCard(null, dialogue, after || null);
+    }
+
+    // ============================================================
+    // Pattern 2 — Speaker description + [，：,:] + "quoted dialogue"
+    //   e.g.  32继续道："守护者必须理解时间的本质…"
+    //   e.g.  32点了点头："没错，他们…"
+    //   e.g.  32的目光深邃而温和，她轻声答道："时间允许你…"
+    //   Speaker part ≤ 30 chars to allow short narration before the colon/comma.
+    // ============================================================
+    const speakerQuoteRe = trimmed.match(/^([^，,：:\n]{1,30})[，,：:]\s*[""](.+?)[""]/);
+    if (speakerQuoteRe) {
+      const ext = extractSpeaker(speakerQuoteRe[1]);
+      if (ext) {
+        // ext.rest = the descriptive part after the speaker number
+        // e.g. for "32的目光深邃而温和，她轻声答道" → speaker=32, rest="的目光深邃而温和，她轻声答道"
+        return dialogueCard(ext.speaker, speakerQuoteRe[2], ext.rest || null);
+      }
+    }
+
+    // ============================================================
+    // Pattern 3 — Pure script / narration-colon format: Speaker…： dialogue
+    //   e.g.  12：这是螺旋中心
+    //   e.g.  18（推了推眼镜）：是的
+    //   e.g.  18咧开嘴，毫不客气地大笑起来："哈哈哈！"
+    //   Speaker text ≤ 15 chars. Try to extract real speaker number.
+    // ============================================================
+    const colonMatch = trimmed.match(/^([^(（：:\n]{1,15})(?:（[^）]*）)?[：:]\s*(.*)/s);
+    if (colonMatch) {
+      const ext = extractSpeaker(colonMatch[1]);
+      if (ext) {
+        // Real speaker found — show rest of description as narration context
+        return dialogueCard(ext.speaker, colonMatch[2].replace(/\n/g, '<br>'), ext.rest || null);
+      }
+      // No speaker number found — use the whole text as speaker label
+      return dialogueCard(colonMatch[1].trim(), colonMatch[2].replace(/\n/g, '<br>'));
+    }
+
+    // ============================================================
+    // Fallback — pure narration
+    // ============================================================
+    return narrationCard(trimmed);
   }
 
   // Build the full view structure
