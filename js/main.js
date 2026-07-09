@@ -876,14 +876,17 @@ function showNovelViewer(chapter) {
     const trimmed = seg.trim();
 
     // --- shared render helpers ---
-    function dialogueCard(speaker, msg, extraNarration) {
-      const portraitImg = getPortrait(speaker);
+    function dialogueCard(speakerName, actionText, dialogueLines) {
+      const portraitImg = getPortrait(speakerName);
       const portraitHTML = portraitImg
-        ? `<img src="${portraitImg}" alt="${speaker||'?'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
+        ? `<img src="${portraitImg}" alt="${speakerName||'?'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='🐱';this.remove()">`
         : '<span style="font-size:2rem;">🐱</span>';
-      const speakerLabel = speaker || '???';
-      const narrationBlock = extraNarration ? `
-        <div style="font-size:0.85rem;color:#c5bfd6;line-height:1.85;margin-top:8px;text-indent:1em;">${extraNarration.replace(/\n/g, '<br>')}</div>` : '';
+      // Clean up trailing punctuation from action text
+      const cleanAction = (actionText || '').replace(/[，,。\s]+$/, '').trim();
+      const displayAction = cleanAction || (speakerName || '');
+      const dialogueHTML = (dialogueLines || []).filter(Boolean).map(d =>
+        `<div style="font-size:0.9rem;color:#ede7f6;line-height:1.75;margin-bottom:2px;">${d}</div>`
+      ).join('');
       return `
         <div class="novel-seg" style="padding:16px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;">
           <div style="display:flex;align-items:flex-start;gap:14px;">
@@ -891,11 +894,10 @@ function showNovelViewer(chapter) {
               ${portraitHTML}
             </div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:0.8rem;color:#ffd54f;font-weight:600;margin-bottom:4px;">${speakerLabel}</div>
-              <div style="font-size:0.9rem;color:#ede7f6;line-height:1.75;">${msg}</div>
+              ${displayAction ? `<div style="font-size:0.8rem;color:#ffd54f;font-weight:600;margin-bottom:6px;">${displayAction}</div>` : ''}
+              ${dialogueHTML}
             </div>
           </div>
-          ${narrationBlock}
         </div>`;
     }
 
@@ -955,72 +957,160 @@ function showNovelViewer(chapter) {
     }
 
     // ============================================================
-    // Pattern 1 — Leading-quote prose: “dialogue” speaker …
-    //   e.g.  “这是螺旋中心？”12疑惑地环顾四周
-    //   e.g.  “如果他们成功了……”小12若有所思地问。
-    //   e.g.  “12，小心点。”5的声音从后方传来
-    //   NOTE: must come BEFORE colon-pattern to avoid false positives
-    //   Uses .+? (non-greedy) to handle data where “ is used for both
-    //   open and close quotes (U+201C ≈ U+201C mixed in data).
+    // Quote helper: extracts ALL quoted segments from text
+    // Matches both U+201C/U+201D smart quotes and ASCII "
     // ============================================================
-    const leadingQuote = trimmed.match(/^[“””](.+?)[“””]\s*/);
-    if (leadingQuote) {
-      const dialogue = leadingQuote[1];
-      let after = trimmed.substring(leadingQuote[0].length);
-
-      const ext = extractSpeaker(after);
-      if (ext) {
-        return dialogueCard(ext.speaker, dialogue, ext.rest || null);
+    function findAllQuoted(text) {
+      const quotes = [];
+      const narrationParts = [];
+      const re = /[“”](.+?)[“”]/gs;
+      let m, lastIdx = 0;
+      while ((m = re.exec(text)) !== null) {
+        // Text before this quote is narration/description
+        narrationParts.push(text.substring(lastIdx, m.index));
+        quotes.push(m[1]);
+        lastIdx = m.index + m[0].length;
       }
-      // Speaker not at start of after-text — try deep scan
-      // (e.g. “一个紫红色的猫咪…18” / “那个声音…32”)
-      const deep = deepScanSpeaker(after);
+      // Remaining text after last quote
+      narrationParts.push(text.substring(lastIdx));
+      // Safety: limit iterations to prevent hangs on malformed input
+      if (quotes.length > 20) return { quotes: quotes.slice(0, 20), narrationText: '' };
+      return { quotes, narrationText: narrationParts.join('').trim() };
+    }
+
+    // ============================================================
+    // Pattern 0 — “前对话” 说话人描述 ：”后对话”
+    //   e.g.  “是的。”小12点了点头，继续道：”我们必须尽快出发。”
+    //   e.g.  “没错。”小32导师微微一笑，缓缓说道：”时间是最好的老师。”
+    //   Leading quote + speaker description + colon + trailing quote
+    //   Must come BEFORE Pattern A to avoid mis-classifying the leading quote
+    // ============================================================
+    const pat0 = trimmed.match(/^[“”](.+?)[“”]\s*([\s\S]+?)[：:]\s*[“”](.+?)[“”]([\s\S]*)$/);
+    if (pat0) {
+      const frontDialogue = pat0[1];
+      const midDesc = pat0[2];       // speaker description between quotes
+      const backDialogue = pat0[3];
+      const afterRest = pat0[4].trim();
+      const extra = findAllQuoted(afterRest);
+      const allDialogue = [frontDialogue, backDialogue, ...extra.quotes];
+      const ext = extractSpeaker(midDesc);
+      if (ext) {
+        // Action text: midDesc cleaned up (the speaker name + description)
+        const actionText = midDesc.trim();
+        let html = dialogueCard(ext.speaker, actionText, allDialogue);
+        if (extra.narrationText) html += narrationCard(extra.narrationText);
+        return html;
+      }
+      // Deep scan: try to find speaker in midDesc
+      const deep = deepScanSpeaker(midDesc);
       if (deep) {
-        return dialogueCard(deep, dialogue, after || null);
+        return dialogueCard(deep, midDesc.trim(), allDialogue);
       }
-      // Truly unknown — still show as dialogue card (writing technique)
-      return dialogueCard(null, dialogue, after || null);
+      // No speaker found — still show as dialogue with midDesc as action
+      let html2 = dialogueCard(null, midDesc.trim(), allDialogue);
+      if (extra.narrationText) html2 += narrationCard(extra.narrationText);
+      return html2;
     }
 
     // ============================================================
-    // Pattern 2 — Speaker description + [，：,:] + "quoted dialogue"
-    //   e.g.  32继续道："守护者必须理解时间的本质…"
-    //   e.g.  32点了点头："没错，他们…"
-    //   e.g.  32的目光深邃而温和，她轻声答道："时间允许你…"
-    //   Speaker part ≤ 30 chars to allow short narration before the colon/comma.
+    // Pattern A — Speaker description + ： + “quoted dialogue”
+    //   e.g.  小14则一如既往地耸了耸肩，嘴角带着一丝微笑：”虽然我喜欢...”
+    //   e.g.  32继续道：”守护者必须理解...”
+    //   e.g.  32点了点头：”没错，他们...”
+    //   Matches: any text up to ：” (colon then left-quote)
     // ============================================================
-    const speakerQuoteRe = trimmed.match(/^([^，,：:\n]{1,30})[，,：:]\s*[""](.+?)[""]/);
-    if (speakerQuoteRe) {
-      const ext = extractSpeaker(speakerQuoteRe[1]);
+    const patA = trimmed.match(/^([\s\S]+?)[：:]\s*[“”](.+?)[“”]([\s\S]*)$/);
+    if (patA) {
+      const fullPreText = patA[1].trim();   // everything before ："
+      const mainDialogue = patA[2];          // the first quoted dialogue
+      const afterFirst = patA[3].trim();    // anything after the closing quote
+
+      // Check for additional quotes in the after-text
+      const extra = findAllQuoted(afterFirst);
+      const allDialogue = [mainDialogue, ...extra.quotes];
+      // If there's extra non-quoted text after all quotes, append as narration
+      const extraNarration = extra.narrationText || '';
+
+      const ext = extractSpeaker(fullPreText);
       if (ext) {
-        // ext.rest = the descriptive part after the speaker number
-        // e.g. for "32的目光深邃而温和，她轻声答道" → speaker=32, rest="的目光深邃而温和，她轻声答道"
-        return dialogueCard(ext.speaker, speakerQuoteRe[2], ext.rest || null);
+        // Build action text: speaker name + rest of description
+        const actionText = fullPreText;
+        let html = dialogueCard(ext.speaker, actionText, allDialogue);
+        if (extraNarration) {
+          html += narrationCard(extraNarration);
+        }
+        return html;
       }
+      // Fallback: no speaker found in pre-text — still show as dialogue
+      let html2 = dialogueCard(null, fullPreText, allDialogue);
+      if (extraNarration) {
+        html2 += narrationCard(extraNarration);
+      }
+      return html2;
     }
 
     // ============================================================
-    // Pattern 3 — Pure script / narration-colon format: Speaker…： dialogue
+    // Pattern B — Leading-quote prose: "dialogue" speaker ...
+    //   e.g.  "呜……也许吧。" 小18懒洋洋地摇晃着尾巴，轻声说，"不过..."
+    //   e.g.  "这是螺旋中心？"12疑惑地环顾四周
+    //   e.g.  "好吧，新的冒险，马上开始。"  (no speaker)
+    // ============================================================
+    const patB = trimmed.match(/^[“"](.+?)[”"]\s*([\s\S]*)$/);
+    if (patB) {
+      const firstDialogue = patB[1];
+      const remaining = patB[2];
+
+      // Extract ALL quoted segments from remaining text
+      const extra = findAllQuoted(remaining);
+      const allDialogue = [firstDialogue, ...extra.quotes];
+      // The non-quoted text is the speaker description
+      const narrationText = extra.narrationText;
+
+      // Try to extract speaker from narration
+      const ext = extractSpeaker(narrationText);
+      if (ext) {
+        return dialogueCard(ext.speaker, narrationText, allDialogue);
+      }
+      // Try deep scan on narration text
+      const deep = deepScanSpeaker(narrationText);
+      if (deep) {
+        return dialogueCard(deep, narrationText, allDialogue);
+      }
+      // Try deep scan on original remaining (before quote extraction)
+      const deep2 = deepScanSpeaker(remaining);
+      if (deep2) {
+        return dialogueCard(deep2, remaining, allDialogue);
+      }
+      // No speaker found — if we have narration text, show it as action
+      if (narrationText) {
+        return dialogueCard(null, narrationText, allDialogue);
+      }
+      // Pure quoted line with no speaker (e.g. last line "好吧，新的冒险...")
+      // Show as narration-style dialogue
+      return narrationCard(allDialogue.map(d => '“' + d + '”').join('\n'));
+    }
+
+    // ============================================================
+    // Pattern C — Colon format without quotes: Speaker...： dialogue
     //   e.g.  12：这是螺旋中心
     //   e.g.  18（推了推眼镜）：是的
-    //   e.g.  18咧开嘴，毫不客气地大笑起来："哈哈哈！"
-    //   Speaker text ≤ 15 chars. Try to extract real speaker number.
     // ============================================================
-    const colonMatch = trimmed.match(/^([^(（：:\n]{1,15})(?:（[^）]*）)?[：:]\s*(.*)/s);
-    if (colonMatch) {
-      const ext = extractSpeaker(colonMatch[1]);
+    const patC = trimmed.match(/^([\s\S]{1,80}?)[：:]\s*([\s\S]+)$/);
+    if (patC) {
+      const preText = patC[1].trim();
+      const content = patC[2].trim();
+      const ext = extractSpeaker(preText);
       if (ext) {
-        // Real speaker found — show rest of description as narration context
-        return dialogueCard(ext.speaker, colonMatch[2].replace(/\n/g, '<br>'), ext.rest || null);
+        return dialogueCard(ext.speaker, preText, [content]);
       }
-      // No speaker number found — use the whole text as speaker label
-      return dialogueCard(colonMatch[1].trim(), colonMatch[2].replace(/\n/g, '<br>'));
+      // No speaker number — use as label
+      return dialogueCard(preText, preText, [content]);
     }
 
     // ============================================================
     // Fallback — pure narration
     // ============================================================
-    return narrationCard(trimmed);
+    return narrationCard(trimmed);    return narrationCard(trimmed);
   }
 
   // Build the full view structure
@@ -1056,7 +1146,15 @@ function showNovelViewer(chapter) {
     }
 
     const seg = rawSegments[idx].trim();
-    contentEl.insertAdjacentHTML('beforeend', buildSegmentHTML(seg));
+    let html;
+    try {
+      html = buildSegmentHTML(seg);
+    } catch(e) {
+      console.warn('[TS] buildSegmentHTML error:', e, 'seg:', seg.substring(0, 80));
+      // Fallback: render as plain narration on error (prevents crash/freeze)
+      html = '<div class="novel-seg" style="padding:14px 0;border-bottom:1px solid rgba(61,46,96,0.25);animation:fadeIn 0.35s ease;"><div style="font-size:0.9rem;color:#c5bfd6;line-height:1.9;text-indent:2em;">' + seg.replace(/\n/g, '<br>') + '</div></div>';
+    }
+    contentEl.insertAdjacentHTML('beforeend', html);
     idx++;
     progressEl.textContent = `${idx}/${rawSegments.length}`;
 
