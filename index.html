@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0a0614">
   <title>时间螺旋 · TimeSpiral</title>
-  <link rel="stylesheet" href="css/game.css?v=20260709d">
+  <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
   <div id="game-container"></div>
 
-  <!-- Nuke any old service worker before loading game -->
+  <!-- Register service worker for offline play -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(r => r.unregister());
-        console.log('[TS] Unregistered', regs.length, 'old service worker(s)');
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log('[TS] Service worker registered'))
+          .catch(e => console.warn('[TS] SW registration failed:', e));
       });
     }
   </script>
 
-  <script type="module" src="js/main.js?v=20260709d"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
