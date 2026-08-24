@@ -11,7 +11,8 @@ const S = {
   unlocked: ['prologue'], // start with only prologue
   completed: [],
   talkedNPCs: {},        // { [chapterId]: { [npcId]: true } } 持久化：各章节已对话的 NPC
-  chapterNPCsTalked: {}  // 当前章节已对话 NPC（运行时引用 talkedNPCs[chapter]）
+  chapterNPCsTalked: {}, // 当前章节已对话 NPC（运行时引用 talkedNPCs[chapter]）
+  clues: []              // 已收集的线索 id 列表（对话分支收集）
 };
 
 // ========== MAP POSITIONS (百分比, 对应 地图.webp 上的房间位置) ==========
@@ -75,6 +76,12 @@ const ITEMS = {
   'energy_crystal': { id:'energy_crystal', name:'能量水晶', icon:'🔵', desc:'凝聚了时间通道能量的水晶', usable:true },
 };
 
+// ========== CLUES (对话分支收集的线索) ==========
+const CLUES = {
+  'clue_vault_code': '时间宝库的密钥是 0724（Zero 建立时间螺旋的日子）',
+  'clue_shadow_weak': '暗影惧怕水晶之光，用水晶锻造的钥匙可以彻底驱散它们',
+};
+
 // ========== CHAPTER-SPECIFIC NPC DIALOGUES ==========
 function getChapterTalks(chapterId) {
   const talks = {
@@ -123,6 +130,10 @@ function getChapterTalks(chapterId) {
         ['9','时间波动数据异常到令人不安。频率和振幅远超正常阈值。这是暗影力量的特征。'],
         ['9','暗影能够扭曲时间的流动。每一个动作都在干扰过去和未来——它们在试探我们的防御。'],
         ['9','神殿的书架上有一份古老卷轴。上面记录了当年Zero他们封印暗影的方法。'],
+        { choices: [
+          { label: '追问暗影的弱点', clue: 'clue_shadow_weak', next: [['9','暗影惧怕水晶之光。用时间水晶锻造的水晶钥匙，可以彻底驱散它们。']] },
+          { label: '打听宝库的密码', clue: 'clue_vault_code', next: [['9','（压低声音）时间宝库的密钥是 0724——Zero 建立时间螺旋的日子。别到处说。']] },
+        ]},
       ],
       'n18': [
         ['18','嘿！别这么紧张！虽然听起来像世界末日，但上次我们不是也挺过来了吗？'],
@@ -362,12 +373,14 @@ function getChapterSpots(chapterId) {
         { id:'n18', t:'npc', x:50, y:50, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
         { id:'altar', t:'puzzle', x:50, y:72, icon:'🔮', label:'水晶祭坛', ptype:'memory', pdesc:'激活祭坛上的时间符文', pflag:'solved_altar', preward:'time_crystal', pmsg:'时间水晶在祭坛上凝聚成形！获得「时间水晶」💎' },
         { id:'scroll', t:'item', x:20, y:65, icon:'📚', label:'古老书架', iid:'ancient_scroll' },
+        { id:'vault', t:'puzzle', x:72, y:18, icon:'🗝️', label:'时间宝库', ptype:'code', pcode:'0724', phint:'宝库门上的铭文被时光磨损……或许 9 号知道开启它的密钥。', pflag:'opened_vault', preward:'healing_herb', pmsg:'时间宝库缓缓开启！获得「时间草」🌿' },
       ],
       'fracture_zone': [
         { id:'n21', t:'npc', x:25, y:40, icon:'🐱', label:'21·探险家', img:'21.webp' },
         { id:'n18', t:'npc', x:50, y:55, icon:'🐱', label:'18·搞笑担当', img:'18.webp' },
         { id:'forge', t:'npc', x:65, y:35, icon:'🔥', label:'时间熔炉', talk:[['旁白','一座古老的熔炉。将时间水晶放入其中，可以锻造出水晶钥匙。']] },
         { id:'rift', t:'info', x:40, y:75, icon:'⚡', label:'巨大裂缝', txt:'一道巨大的时间裂缝。黑暗能量不断从中渗出。暗影的力量在此聚集。' },
+        { id:'runes', t:'puzzle', x:80, y:70, icon:'🔍', label:'散落的能量符文', ptype:'find', pfind:5, pdesc:'寻找散落的能量符文', pflag:'found_runes', preward:'time_shard', pmsg:'集齐了散落的能量符文！获得「时间碎片」💠' },
       ],
       'spiral_nexus': [
         { id:'n36', t:'npc', x:45, y:25, icon:'🐱', label:'36·领袖', img:'36.webp' },
@@ -1339,11 +1352,13 @@ function updateHUD(roomName) {
     <button id="btn-inv" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🎒</button>
     <button id="btn-time" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">⚡</button>
     <button id="btn-map" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🗺️</button>
-    <button id="btn-chapters" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">📖</button>`;
+    <button id="btn-chapters" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">📖</button>
+    <button id="btn-clues" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🔍</button>`;
   document.getElementById('btn-inv')?.addEventListener('click', toggleInventory);
   document.getElementById('btn-map')?.addEventListener('click', showMap);
   document.getElementById('btn-time')?.addEventListener('click', useTimePower);
   document.getElementById('btn-chapters')?.addEventListener('click', () => { saveGame(); showChapterSelect(); });
+  document.getElementById('btn-clues')?.addEventListener('click', toggleClues);
 }
 
 // ========== HANDLERS ==========
@@ -1365,9 +1380,7 @@ function handleSpot(spot) {
         setTimeout(() => completeChapter(), 1000);
       }
     }
-    let i = 0;
-    const next = () => { if (i >= spot.talk.length) return; const [sp,tx] = spot.talk[i]; i++; showDialog(sp, tx, i < spot.talk.length ? next : null, spot.img); };
-    next(); return;
+    playTalk(spot.talk, spot); return;
   }
   if (spot.t === 'item') {
     if (S.flags['p_'+spot.iid]) { showDialog('旁白', '这里已经没有东西了。'); return; }
@@ -1403,6 +1416,80 @@ function showDialog(speaker, text, onDone, img) {
   <div style="text-align:right;font-size:0.65rem;color:#7c6b9a;margin-top:4px;padding-right:8px;">点击${onDone?'继续':'关闭'} ▸</div>`;
   wrap.addEventListener('click', () => { wrap.remove(); showingDialog = false; if (onDone) setTimeout(onDone, 50); });
   ct().appendChild(wrap);
+}
+
+// ========== DIALOG CHOICES & CLUES ==========
+function playTalk(entries, spot) {
+  let i = 0;
+  const advance = () => {
+    if (i >= entries.length) return;
+    const entry = entries[i++];
+    if (Array.isArray(entry)) {
+      showDialog(entry[0], entry[1], i < entries.length ? advance : null, spot && spot.img);
+    } else if (entry && Array.isArray(entry.choices)) {
+      showChoice(entry.choices, (choice) => {
+        applyChoice(choice);
+        if (choice.next && choice.next.length) playTalk(choice.next, spot);
+        else advance();
+      }, spot && spot.img);
+    } else {
+      advance();
+    }
+  };
+  advance();
+}
+
+function showChoice(choices, onPick, img) {
+  $('.dlg-wrap')?.remove(); showingDialog = true;
+  const wrap = document.createElement('div');
+  wrap.className = 'dlg-wrap';
+  wrap.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;max-width:500px;width:90%;';
+  const btns = choices.map((c, i) =>
+    `<button data-ci="${i}" style="display:block;width:100%;padding:12px 14px;margin-bottom:8px;border:1px solid #3d2e60;border-radius:10px;background:rgba(35,24,56,0.9);color:#ede7f6;font-size:0.9rem;text-align:left;font-family:inherit;cursor:pointer;transition:all 0.15s;">▸ ${c.label}</button>`
+  ).join('');
+  wrap.innerHTML = `<div style="background:rgba(16,10,30,0.96);border:1px solid #3d2e60;border-radius:14px;padding:16px 18px;backdrop-filter:blur(12px);animation:slideUp 0.25s ease;">
+    <div style="font-size:0.8rem;color:#ffd54f;margin-bottom:10px;">💬 选择你的回应</div>
+    ${btns}
+  </div>`;
+  wrap.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-ci]');
+    if (!b) return;
+    const choice = choices[+b.dataset.ci];
+    wrap.remove(); showingDialog = false;
+    if (onPick) onPick(choice);
+  });
+  ct().appendChild(wrap);
+}
+
+function applyChoice(choice) {
+  if (choice.flag) S.flags[choice.flag] = true;
+  if (choice.clue) collectClue(choice.clue);
+  if (choice.item && !S.inv.includes(choice.item)) S.inv.push(choice.item);
+  if (choice.flag || choice.clue || choice.item) saveGame();
+}
+
+function collectClue(id) {
+  if (!S.clues) S.clues = [];
+  if (S.clues.includes(id)) return;
+  S.clues.push(id);
+  toast(`🔍 获得线索：${CLUES[id] || id}`);
+  saveGame();
+}
+
+function toggleClues() {
+  if ($('.clue-panel')) { $('.clue-panel').remove(); $('.clue-backdrop')?.remove(); return; }
+  const bd = document.createElement('div');
+  bd.className = 'clue-backdrop';
+  bd.style.cssText = 'position:absolute;inset:0;z-index:280;background:rgba(5,3,12,0.5);';
+  bd.addEventListener('click', () => { bd.remove(); $('.clue-panel')?.remove(); });
+  ct().appendChild(bd);
+  const panel = document.createElement('div');
+  panel.className = 'clue-panel';
+  panel.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:290;width:90%;max-width:380px;max-height:70vh;overflow-y:auto;background:rgba(16,10,30,0.97);border:1px solid #3d2e60;border-radius:14px;padding:18px;';
+  const clues = S.clues || [];
+  panel.innerHTML = `<div style="font-size:1rem;color:#ffd54f;margin-bottom:12px;">🔍 已收集线索 (${clues.length})</div>
+    ${clues.length ? clues.map(id => `<div style="font-size:0.85rem;color:#ede7f6;line-height:1.6;padding:8px 10px;background:rgba(35,24,56,0.6);border-radius:8px;margin-bottom:8px;">• ${CLUES[id] || id}</div>`).join('') : '<div style="font-size:0.85rem;color:#7c6b9a;">尚未收集任何线索。</div>'}`;
+  ct().appendChild(panel);
 }
 
 // ========== PUZZLE ==========
@@ -1454,6 +1541,70 @@ function startPuzzle(spot) {
         else { tile.style.borderColor = '#ff5252'; idx = 0; grid.querySelectorAll('div').forEach(t => { t.style.borderColor = '#3d2e60'; t.style.opacity = '1'; }); setTimeout(() => tile.style.borderColor = '#3d2e60', 300); }
       });
       grid.appendChild(tile);
+    });
+  } else if (spot.ptype === 'code') {
+    const code = spot.pcode || '0724';
+    let entered = '';
+    overlay.innerHTML = `
+      <div style="font-size:1.3rem;color:#ffd54f;margin-bottom:8px;">🗝️ 密码锁</div>
+      <div style="font-size:0.85rem;color:#b39ddb;margin-bottom:16px;max-width:300px;text-align:center;">${spot.phint || ''}</div>
+      <div id="code-display" style="display:flex;gap:8px;margin-bottom:16px;">${[...code].map(() => '<div style="width:36px;height:46px;border:2px solid #3d2e60;border-radius:8px;background:rgba(16,10,30,0.9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#ffd54f;">·</div>').join('')}</div>
+      <div id="code-pad" style="display:grid;grid-template-columns:repeat(3,56px);gap:8px;"></div>`;
+    ct().appendChild(overlay);
+    const display = overlay.querySelector('#code-display');
+    const pad = overlay.querySelector('#code-pad');
+    ['1','2','3','4','5','6','7','8','9','⌫','0','✓'].forEach(d => {
+      const b = document.createElement('button');
+      b.textContent = d;
+      b.style.cssText = 'height:52px;border:1px solid #3d2e60;border-radius:10px;background:rgba(35,24,56,0.9);color:#ede7f6;font-size:1.1rem;font-family:inherit;cursor:pointer;';
+      b.addEventListener('click', () => {
+        if (d === '⌫') { entered = entered.slice(0, -1); }
+        else if (d === '✓') {
+          if (entered === code) { overlay.remove(); puzzleDone(spot); return; }
+          entered = '';
+          display.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}], {duration:250});
+          toast('❌ 密码错误');
+        } else if (entered.length < code.length) { entered += d; }
+        const cells = display.children;
+        for (let k = 0; k < cells.length; k++) cells[k].textContent = entered[k] || '·';
+      });
+      pad.appendChild(b);
+    });
+  } else if (spot.ptype === 'find') {
+    const total = spot.pfind || 5;
+    const sym = spot.psymbol || '🔮';
+    let found = 0;
+    overlay.innerHTML = `
+      <div style="font-size:1.3rem;color:#ffd54f;margin-bottom:8px;">🔍 ${spot.pdesc || '寻找隐藏的符文'}</div>
+      <div style="font-size:0.9rem;color:#b39ddb;margin-bottom:14px;">找到 <span id="find-count" style="color:#ffd54f;">${found}/${total}</span> 个隐藏符文</div>
+      <div id="find-scene" style="position:relative;width:340px;height:240px;border:1px solid #3d2e60;border-radius:12px;background:radial-gradient(ellipse at center,#241640,#0d0620);overflow:hidden;margin-bottom:14px;"></div>
+      <button id="find-hint" style="padding:6px 18px;border:1px solid #3d2e60;border-radius:16px;background:transparent;color:#b39ddb;font-size:0.8rem;font-family:inherit;cursor:pointer;">💡 提示</button>`;
+    ct().appendChild(overlay);
+    const scene = overlay.querySelector('#find-scene');
+    const targets = [];
+    for (let k = 0; k < total; k++) {
+      const t = document.createElement('div');
+      t.style.cssText = `position:absolute;left:${10 + Math.random() * 84}%;top:${10 + Math.random() * 76}%;font-size:1.6rem;opacity:0.18;cursor:pointer;transition:opacity 0.2s;`;
+      t.textContent = sym;
+      t.addEventListener('click', () => {
+        if (t.dataset.found) return;
+        t.dataset.found = '1'; t.style.opacity = '1'; t.style.filter = 'drop-shadow(0 0 6px #69f0ae)';
+        found++;
+        overlay.querySelector('#find-count').textContent = `${found}/${total}`;
+        if (found >= total) setTimeout(() => { overlay.remove(); puzzleDone(spot); }, 500);
+      });
+      targets.push(t); scene.appendChild(t);
+    }
+    const decoys = ['✨','🌙','⭐','💫','⚡'];
+    for (let k = 0; k < decoys.length; k++) {
+      const d = document.createElement('div');
+      d.style.cssText = `position:absolute;left:${10 + Math.random() * 84}%;top:${10 + Math.random() * 76}%;font-size:1.4rem;opacity:0.55;cursor:pointer;`;
+      d.textContent = decoys[k];
+      d.addEventListener('click', () => { d.animate([{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}], {duration:200}); });
+      scene.appendChild(d);
+    }
+    overlay.querySelector('#find-hint').addEventListener('click', () => {
+      targets.forEach(t => { if (!t.dataset.found) { t.style.opacity = '0.85'; setTimeout(() => { if (!t.dataset.found) t.style.opacity = '0.18'; }, 900); } });
     });
   }
 }
@@ -1637,7 +1788,8 @@ function saveGame() {
   localStorage.setItem('timespiral_save', JSON.stringify({
     chapter:S.chapter, room:S.room, energy:S.energy, inv:S.inv,
     flags:S.flags, visited:S.visited, unlocked:S.unlocked, completed:S.completed,
-    talkedNPCs:S.talkedNPCs || {}, chapterNPCsTalked:S.chapterNPCsTalked || {}
+    talkedNPCs:S.talkedNPCs || {}, chapterNPCsTalked:S.chapterNPCsTalked || {},
+    clues:S.clues || []
   }));
 }
 function loadGame() {
@@ -1650,6 +1802,7 @@ function loadGame() {
     S.unlocked = d.unlocked || ['prologue']; S.completed = d.completed || [];
     S.talkedNPCs = d.talkedNPCs || {};
     S.chapterNPCsTalked = d.chapterNPCsTalked || S.talkedNPCs[S.chapter] || {};
+    S.clues = d.clues || [];
     repairSave(); // fix corrupted saves from old buggy code
     return true;
   }
@@ -1674,7 +1827,7 @@ function repairSave() {
 function resetState() {
   S.chapter = 'prologue'; S.room = 'spiral_nexus'; S.energy = 100;
   S.inv = []; S.flags = {}; S.visited = {}; S.chapterNPCsTalked = {};
-  S.talkedNPCs = {};
+  S.talkedNPCs = {}; S.clues = [];
   S.unlocked = ['prologue']; S.completed = []; S.goal = ''; S.goalNPCs = [];
 }
 
