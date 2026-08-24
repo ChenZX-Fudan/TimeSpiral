@@ -2,7 +2,7 @@
 // 策略：预缓存核心资源（HTML/CSS/JS/故事数据），其余资源（图片等）在首次访问时运行时缓存。
 // 导航请求优先走网络，失败时回退到缓存的首页，保证离线可玩。
 // 部署新版本时只需修改 CACHE 版本号，activate 阶段会自动清理旧缓存。
-const CACHE = 'timespiral-v1';
+const CACHE = 'timespiral-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
