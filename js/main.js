@@ -9,7 +9,9 @@ const S = {
   energy: 100, maxEnergy: 100,
   inv: [], flags: {}, visited: {},
   unlocked: ['prologue'], // start with only prologue
-  completed: []
+  completed: [],
+  talkedNPCs: {},        // { [chapterId]: { [npcId]: true } } 持久化：各章节已对话的 NPC
+  chapterNPCsTalked: {}  // 当前章节已对话 NPC（运行时引用 talkedNPCs[chapter]）
 };
 
 // ========== MAP POSITIONS (百分比, 对应 地图.webp 上的房间位置) ==========
@@ -44,6 +46,20 @@ const EXTRAS = [
   { id:'extra7', title:'番外7：穿越小猫探险',   obj:'小12和小18意外穿越到人类世界', room:'spiral_nexus', goal:'read_story' },
   { id:'extra8', title:'番外8：见到作者啦~',    obj:'三小只穿越到现实世界，见到了infinity本人', room:'spiral_nexus', goal:'read_story' },
 ];
+
+// 各章节的「通关目标标记」。重玩本章时清除这些标记以重新触发通关。
+// 注意：shadow_unlock 故意不列在 ch2 中——它是通往暗影之地的关隘，
+// 一旦解开应保持常开，否则重玩 ch2 会把后续章节入口重新锁死。
+const GOAL_FLAGS = {
+  'ch1': ['beat_scout'],
+  'ch2': ['solved_altar'],
+  'ch3': ['beat_boss'],
+  'ch4': ['found_14'],
+  'ch5': ['rescue_14'],
+  'ch6': ['beat_vanguard', 'beat_commander', 'beat_general'],
+  'ch7': ['honor_36'],
+  'ch8': ['sealed_core'],
+};
 
 // ========== ITEMS ==========
 const ITEMS = {
@@ -678,8 +694,11 @@ function showChapterSelect() {
     });
   }
 
-  // Reset button
-  html += `<div style="text-align:center;margin-top:20px;">
+  // Replay + Reset buttons
+  const curCh = [...CHAPTERS, ...EXTRAS].find(c => c.id === S.chapter);
+  const curTitle = curCh ? curCh.title : '当前章节';
+  html += `<div style="text-align:center;margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button id="btn-replay" style="padding:8px 18px;border:1px solid #7c4dff;border-radius:16px;background:rgba(124,77,255,0.12);color:#b388ff;font-size:0.8rem;font-family:inherit;cursor:pointer;" title="仅重置本章进度，不影响其他章节">🔁 重玩《${curTitle}》</button>
     <button id="btn-reset" style="padding:8px 20px;border:1px solid #3d2e60;border-radius:16px;background:transparent;color:#7c6b9a;font-size:0.8rem;font-family:inherit;cursor:pointer;">🔄 重置进度</button>
   </div>`;
   html += `</div>`;
@@ -710,40 +729,9 @@ function showChapterSelect() {
     saveGame();
 
     // Extras → visual novel viewer
-    if (isExtra) {
-      showNovelViewer(ch);
-      return;
-    }
-
+    if (isExtra) { showNovelViewer(ch); return; }
     // Main chapters → story reader + game
-    const storyText = STORY_DATA[chId]?.text || '';
-    ct().innerHTML = `
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;">
-        <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
-          <span style="color:#b388ff;font-weight:600;">📖 ${ch.title}</span>
-          <button id="btn-skip-story" style="padding:8px 18px;border:1px solid #ffd54f;border-radius:16px;background:rgba(255,213,79,0.1);color:#ffd54f;font-size:0.85rem;font-family:inherit;cursor:pointer;">跳过 ⏭</button>
-        </div>
-        <div style="flex:1;overflow-y:auto;padding:20px 18px;color:#ede7f6;line-height:2;font-size:0.95rem;">
-          ${storyText ? storyText.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('') : '<p style="text-align:center;color:#7c6b9a;padding:40px;">暂无文本，直接进入游戏吧</p>'}
-        </div>
-        <div style="padding:16px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
-          <button id="btn-enter-game" style="width:220px;padding:14px 0;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1.05rem;font-family:inherit;cursor:pointer;">🎮 进入冒险</button>
-          <div style="font-size:0.7rem;color:#7c6b9a;margin-top:8px;">目标：${ch.obj}</div>
-        </div>
-      </div>`;
-    document.getElementById('btn-skip-story')?.addEventListener('click', () => startChapterGame(ch));
-    document.getElementById('btn-enter-game')?.addEventListener('click', () => startChapterGame(ch));
-    // Async load story if not preloaded
-    if (!storyText) {
-      fetch('js/data/stories.json').then(r => r.json()).then(data => {
-        STORY_DATA = data;
-        const text = data[chId]?.text || '';
-        if (text) {
-          const el = ct().querySelector('[style*="overflow-y:auto"]');
-          if (el) el.innerHTML = text.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('');
-        }
-      }).catch(() => {});
-    }
+    showStoryBeforeGame(ch);
   });
 
   document.getElementById('btn-reset')?.addEventListener('click', () => {
@@ -754,6 +742,64 @@ function showChapterSelect() {
       toast('🔄 进度已重置');
     }
   });
+
+  // 重玩本章：仅重置「当前章节」进度，不影响其他章节与已解锁内容
+  document.getElementById('btn-replay')?.addEventListener('click', () => {
+    const ch = [...CHAPTERS, ...EXTRAS].find(c => c.id === S.chapter);
+    if (!ch) return;
+    if (confirm(`确定要重玩《${ch.title}》吗？\n将清空该章节的进度（已对话 NPC / 通关状态），但不会影响其他章节。`)) {
+      replayChapter(ch);
+      toast('🔁 已重置本章，重新进入...');
+      if (EXTRAS.some(e => e.id === ch.id)) showNovelViewer(ch);
+      else showStoryBeforeGame(ch);
+    }
+  });
+}
+
+// 重玩本章：清空该章节的本地进度并重新进入
+function replayChapter(ch) {
+  S.completed = S.completed.filter(id => id !== ch.id);
+  if (!S.talkedNPCs) S.talkedNPCs = {};
+  S.talkedNPCs[ch.id] = {};
+  S.chapterNPCsTalked = {};
+  // 清除该章节的通关目标标记，使其可再次通关
+  const flags = GOAL_FLAGS[ch.id];
+  if (flags) flags.forEach(f => { delete S.flags[f]; });
+  // 注意：shadow_unlock 故意不在 GOAL_FLAGS 中——重玩 ch2 不会重新锁死暗影之地入口
+  S.chapter = ch.id; S.room = ch.room;
+  saveGame();
+}
+
+// 进入章节前的剧情阅读页（主线章节通用）
+function showStoryBeforeGame(ch) {
+  const storyText = STORY_DATA[ch.id]?.text || '';
+  ct().innerHTML = `
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d0620;">
+      <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+        <span style="color:#b388ff;font-weight:600;">📖 ${ch.title}</span>
+        <button id="btn-skip-story" style="padding:8px 18px;border:1px solid #ffd54f;border-radius:16px;background:rgba(255,213,79,0.1);color:#ffd54f;font-size:0.85rem;font-family:inherit;cursor:pointer;">跳过 ⏭</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:20px 18px;color:#ede7f6;line-height:2;font-size:0.95rem;">
+        ${storyText ? storyText.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('') : '<p style="text-align:center;color:#7c6b9a;padding:40px;">暂无文本，直接进入游戏吧</p>'}
+      </div>
+      <div style="padding:16px;text-align:center;border-top:1px solid #3d2e60;background:rgba(10,6,20,0.95);">
+        <button id="btn-enter-game" style="width:220px;padding:14px 0;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1.05rem;font-family:inherit;cursor:pointer;">🎮 进入冒险</button>
+        <div style="font-size:0.7rem;color:#7c6b9a;margin-top:8px;">目标：${ch.obj}</div>
+      </div>
+    </div>`;
+  document.getElementById('btn-skip-story')?.addEventListener('click', () => startChapterGame(ch));
+  document.getElementById('btn-enter-game')?.addEventListener('click', () => startChapterGame(ch));
+  // Async load story if not preloaded
+  if (!storyText) {
+    fetch('js/data/stories.json').then(r => r.json()).then(data => {
+      STORY_DATA = data;
+      const text = data[ch.id]?.text || '';
+      if (text) {
+        const el = ct().querySelector('[style*="overflow-y:auto"]');
+        if (el) el.innerHTML = text.split('\n').filter(l => l.trim()).map(p => `<p style="text-indent:2em;margin-bottom:0.8em;">${p}</p>`).join('');
+      }
+    }).catch(() => {});
+  }
 }
 
 // --- Story Reader ---
@@ -1110,7 +1156,7 @@ function showNovelViewer(chapter) {
     // ============================================================
     // Fallback — pure narration
     // ============================================================
-    return narrationCard(trimmed);    return narrationCard(trimmed);
+    return narrationCard(trimmed);
   }
 
   // Build the full view structure
@@ -1183,8 +1229,31 @@ function startChapterGame(chapter) {
   S.room = chapter.room;
   S.goal = chapter.goal;
   S.goalNPCs = chapter.goalNPCs || [];
-  S.chapterNPCsTalked = {};
+  // 从持久化映射恢复当前章节的「已对话 NPC」，刷新不再丢失进度
+  if (!S.talkedNPCs) S.talkedNPCs = {};
+  if (!S.talkedNPCs[chapter.id]) S.talkedNPCs[chapter.id] = {};
+  S.chapterNPCsTalked = S.talkedNPCs[chapter.id];
+  // 若重进时目标已满足但尚未写入 completed（如刷新发生在通关延迟内），补触发通关
+  if (S.goal === 'talk_all_npcs' && S.goalNPCs.length &&
+      S.goalNPCs.every(id => S.chapterNPCsTalked[id]) &&
+      !S.completed.includes(S.chapter)) {
+    setTimeout(() => completeChapter(), 800);
+  }
   renderRoom();
+}
+
+// 实时刷新目标栏的「已对话 X/N」进度
+function updateObjProgress() {
+  const ob = document.getElementById('obj-bar');
+  if (!ob) return;
+  const ch = [...CHAPTERS, ...EXTRAS].find(c => c.id === S.chapter);
+  if (!ch) return;
+  let txt = `🎯 ${ch.obj}`;
+  if (S.goal === 'talk_all_npcs' && S.goalNPCs.length) {
+    const talked = S.goalNPCs.filter(id => S.chapterNPCsTalked[id]).length;
+    txt += `\n💬 已对话 ${talked}/${S.goalNPCs.length}`;
+  }
+  ob.textContent = txt;
 }
 
 function renderRoom() {
@@ -1202,8 +1271,15 @@ function renderRoom() {
   const ch = [...CHAPTERS, ...EXTRAS].find(c => c.id === S.chapter);
   if (ch) {
     const objBar = document.createElement('div');
-    objBar.style.cssText = 'position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:90;padding:6px 16px;background:rgba(10,6,20,0.9);border:1px solid #ffd54f;border-radius:16px;color:#ffd54f;font-size:0.75rem;pointer-events:none;text-align:center;max-width:85%;';
-    objBar.textContent = `🎯 ${ch.obj}`;
+    objBar.id = 'obj-bar';
+    objBar.style.cssText = 'position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:90;padding:6px 16px;background:rgba(10,6,20,0.9);border:1px solid #ffd54f;border-radius:16px;color:#ffd54f;font-size:0.75rem;pointer-events:none;text-align:center;max-width:90%;white-space:pre-line;line-height:1.5;';
+    let objText = `🎯 ${ch.obj}`;
+    // 对话类目标：显示已对话进度
+    if (S.goal === 'talk_all_npcs' && S.goalNPCs.length) {
+      const talked = S.goalNPCs.filter(id => S.chapterNPCsTalked[id]).length;
+      objText += `\n💬 已对话 ${talked}/${S.goalNPCs.length}`;
+    }
+    objBar.textContent = objText;
     ct().appendChild(objBar);
   }
 
@@ -1280,6 +1356,11 @@ function handleSpot(spot) {
     // Track NPC talk for chapter goals
     if (S.goal === 'talk_all_npcs' && S.goalNPCs.includes(spot.id)) {
       S.chapterNPCsTalked[spot.id] = true;
+      if (!S.talkedNPCs) S.talkedNPCs = {};
+      if (!S.talkedNPCs[S.chapter]) S.talkedNPCs[S.chapter] = {};
+      S.talkedNPCs[S.chapter][spot.id] = true;
+      saveGame(); // 立即持久化，刷新不再丢失「已对话 NPC」进度
+      updateObjProgress(); // 实时刷新「已对话 X/N」提示
       if (S.goalNPCs.every(id => S.chapterNPCsTalked[id])) {
         setTimeout(() => completeChapter(), 1000);
       }
@@ -1555,7 +1636,8 @@ function showMap() {
 function saveGame() {
   localStorage.setItem('timespiral_save', JSON.stringify({
     chapter:S.chapter, room:S.room, energy:S.energy, inv:S.inv,
-    flags:S.flags, visited:S.visited, unlocked:S.unlocked, completed:S.completed
+    flags:S.flags, visited:S.visited, unlocked:S.unlocked, completed:S.completed,
+    talkedNPCs:S.talkedNPCs || {}, chapterNPCsTalked:S.chapterNPCsTalked || {}
   }));
 }
 function loadGame() {
@@ -1566,6 +1648,8 @@ function loadGame() {
     S.energy = d.energy ?? 100; S.inv = d.inv || [];
     S.flags = d.flags || {}; S.visited = d.visited || {};
     S.unlocked = d.unlocked || ['prologue']; S.completed = d.completed || [];
+    S.talkedNPCs = d.talkedNPCs || {};
+    S.chapterNPCsTalked = d.chapterNPCsTalked || S.talkedNPCs[S.chapter] || {};
     repairSave(); // fix corrupted saves from old buggy code
     return true;
   }
@@ -1590,6 +1674,7 @@ function repairSave() {
 function resetState() {
   S.chapter = 'prologue'; S.room = 'spiral_nexus'; S.energy = 100;
   S.inv = []; S.flags = {}; S.visited = {}; S.chapterNPCsTalked = {};
+  S.talkedNPCs = {};
   S.unlocked = ['prologue']; S.completed = []; S.goal = ''; S.goalNPCs = [];
 }
 
