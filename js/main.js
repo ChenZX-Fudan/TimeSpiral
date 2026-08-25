@@ -12,7 +12,8 @@ const S = {
   completed: [],
   talkedNPCs: {},        // { [chapterId]: { [npcId]: true } } 持久化：各章节已对话的 NPC
   chapterNPCsTalked: {}, // 当前章节已对话 NPC（运行时引用 talkedNPCs[chapter]）
-  clues: []              // 已收集的线索 id 列表（对话分支收集）
+  clues: [],             // 已收集的线索 id 列表（对话分支收集）
+  favor: {}              // 好感度：{ [npcId]: 数值 }，跨章节累积，影响最终结局
 };
 
 // ========== MAP POSITIONS (百分比, 对应 地图.webp 上的房间位置) ==========
@@ -82,6 +83,13 @@ const CLUES = {
   'clue_shadow_weak': '暗影惧怕水晶之光，用水晶锻造的钥匙可以彻底驱散它们',
 };
 
+// NPC 显示名（好感度面板 / 结局统计使用）
+const NPC_NAMES = {
+  n0:'Zero·初代守护者', n1:'1·时间回溯者', n2:'2·时间预知者', n5:'5·战术官',
+  n9:'9·分析师', n11:'11·节奏者', n14:'14·疾风', n18:'18·搞笑担当',
+  n19:'19·影行者', n21:'21·探险家', n24:'24·修补者', n36:'36·领袖', n12:'12·你'
+};
+
 // ========== CHAPTER-SPECIFIC NPC DIALOGUES ==========
 function getChapterTalks(chapterId) {
   const talks = {
@@ -91,6 +99,10 @@ function getChapterTalks(chapterId) {
         ['36','12号，你感知到了吗？裂缝区域的异常波动越来越强烈。时间在颤抖。'],
         ['36','1号回溯了过去，2号预见了危机——两条时间线都指向同一个结论：暗影正在回归。'],
         ['36','去裂缝区域调查。如果发现暗影生物，消灭它。这是你作为守护者的第一个任务。'],
+        { choices: [
+          { label: '（郑重）交给我吧，36', favor:{id:'n36',delta:2}, next:[['36','（欣慰）我就知道没看错你。']] },
+          { label: '（紧张）我……能行吗', favor:{id:'n1',delta:1}, next:[['36','害怕是正常的。迈出第一步，你就已经赢了。']] },
+        ]},
       ],
       'n5': [
         ['5','暗影斥候——时间禁锢者的侦察兵。速度快，攻击不致命，但绝不能让它们把情报带回去。'],
@@ -131,8 +143,8 @@ function getChapterTalks(chapterId) {
         ['9','暗影能够扭曲时间的流动。每一个动作都在干扰过去和未来——它们在试探我们的防御。'],
         ['9','神殿的书架上有一份古老卷轴。上面记录了当年Zero他们封印暗影的方法。'],
         { choices: [
-          { label: '追问暗影的弱点', clue: 'clue_shadow_weak', next: [['9','暗影惧怕水晶之光。用时间水晶锻造的水晶钥匙，可以彻底驱散它们。']] },
-          { label: '打听宝库的密码', clue: 'clue_vault_code', next: [['9','（压低声音）时间宝库的密钥是 0724——Zero 建立时间螺旋的日子。别到处说。']] },
+          { label: '追问暗影的弱点', clue: 'clue_shadow_weak', favor:{id:'n9',delta:1}, next: [['9','暗影惧怕水晶之光。用时间水晶锻造的水晶钥匙，可以彻底驱散它们。']] },
+          { label: '打听宝库的密码', clue: 'clue_vault_code', favor:{id:'n9',delta:1}, next: [['9','（压低声音）时间宝库的密钥是 0724——Zero 建立时间螺旋的日子。别到处说。']] },
         ]},
       ],
       'n18': [
@@ -201,6 +213,10 @@ function getChapterTalks(chapterId) {
       'n18': [
         ['18','哇，大家都好严肃！放轻松点嘛——不过是一只大黑怪而已。'],
         ['18','我速度快，可以帮你们吸引它的注意力！不过如果我跑错方向了……呃，那就是战术性撤退。'],
+        { choices: [
+          { label: '（笑）有你在，安心多了', favor:{id:'n18',delta:2}, next:[['18','（耳朵竖起来）真、真的？嘿嘿，那我可就当真啦！']] },
+          { label: '（正色）别逞强，跟紧我', favor:{id:'n5',delta:1}, next:[['18','（撇嘴）知道了知道了，长官。']] },
+        ]},
       ],
     },
     'ch4': {
@@ -208,6 +224,10 @@ function getChapterTalks(chapterId) {
         ['14','（踩着滑板跃上一块岩石）这地方真诡异！我喜欢！'],
         ['14','裂缝里的时间流好奇怪——有时候快有时候慢。嘿，你说会不会有时空隧道什么的？'],
         ['14','别担心，我去高处侦察一下！我可是最擅长这个的——（说着就冲了出去）'],
+        { choices: [
+          { label: '（喊）等等！一起走！', favor:{id:'n14',delta:2}, next:[['14','（远远回头）哈，这就来！']] },
+          { label: '（叹气）又擅自行动', favor:{id:'n21',delta:1}, next:[['14','（已经跑远了）']] },
+        ]},
       ],
       'n19': [
         ['19','时间的裂缝……比我们想象的要深。这里有某种力量在试图隐藏它。'],
@@ -230,6 +250,10 @@ function getChapterTalks(chapterId) {
         ['18','每次我们追踪暗影，事情总是越变越糟。我不喜欢这感觉——我的尾巴都紧张得打结了！'],
         ['18','不过放心吧！我速度快，可以帮你吸引那些黑影的注意力。反正它们也抓不到我——大概吧。'],
         ['18','前面有个能量节点！我看到了！快点收集，我们得攒够能量去救14！'],
+        { choices: [
+          { label: '（揉揉18的头）辛苦你了', favor:{id:'n18',delta:2}, next:[['18','（被揉懵了）诶——别、别随便摸猫头啊！……不过，谢谢。']] },
+          { label: '（点头）专注任务', favor:{id:'n19',delta:1}, next:[['18','切，无趣。']] },
+        ]},
       ],
       'n19': [
         ['19','裂缝不只是普通的时间裂痕——它在吞噬时间的根源。14很可能就在裂缝的最深处。'],
@@ -297,6 +321,10 @@ function getChapterTalks(chapterId) {
         ['36','（站在暗影之地的最深处，暗灰色的毛发在黑暗中泛着微光）时间禁锢者……它几乎完全苏醒了。'],
         ['36','我创立时间共鸣的那一天就知道——总有一天，需要有人用自己的生命来加固封印。'],
         ['36','12，你已经成长了。你不再需要我的指导。带领守护者们，继续守护时间螺旋。这是我的选择。'],
+        { choices: [
+          { label: '（拥抱36）我陪你到最后', favor:{id:'n36',delta:3}, next:[['36','（微微一怔，回以额头相抵）……谢谢你，12。']] },
+          { label: '（哽咽）为什么一定是你', favor:{id:'n36',delta:1}, next:[['36','因为这是守护者的宿命。但你们，是我的骄傲。']] },
+        ]},
       ],
       'n5': [
         ['5','36……他知道这一天会来。但他从来没有告诉过我们——他一直在独自承受。'],
@@ -318,6 +346,10 @@ function getChapterTalks(chapterId) {
         ['5','36已经不在了……但他的时间共鸣依然存在于我们每个人的心中。你能感觉到吗？'],
         ['5','暗影核心就在前面——封印它的力量，完成36未竟的使命。这是最后一战。'],
         ['5','用36留给你的遗物。它能引导时间共鸣的力量——那是封印暗影核心的钥匙。'],
+        { choices: [
+          { label: '（握紧遗物）为了所有人', favor:{id:'n36',delta:2}, next:[['5','嗯。为了时间螺旋里的每一个生命。']] },
+          { label: '（看向18）为了并肩的伙伴', favor:{id:'n18',delta:2}, next:[['5','（笑）那家伙要是听到，尾巴能翘到天上。']] },
+        ]},
       ],
       'n12': [
         ['12','（紧握着36的遗物，感受到一股温暖的力量）36……你还在，对吗？'],
@@ -662,6 +694,7 @@ function showTitle() {
 
 // --- Chapter Select ---
 function showChapterSelect() {
+  showingDialog = false; // 切屏时清掉残留对话框状态，避免守卫误拦截后续点击
   const mainDone = CHAPTERS.every(ch => S.completed.includes(ch.id));
   const showExtras = !!S.flags._extrasRevealed;
   // Main chapters always visible; extras only after easter egg
@@ -1270,6 +1303,7 @@ function updateObjProgress() {
 }
 
 function renderRoom() {
+  showingDialog = false; // 重建房间前清掉对话框状态
   const rooms = getRoom();
   const room = rooms[S.room];
   if (!room) return;
@@ -1353,12 +1387,14 @@ function updateHUD(roomName) {
     <button id="btn-time" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">⚡</button>
     <button id="btn-map" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🗺️</button>
     <button id="btn-chapters" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">📖</button>
-    <button id="btn-clues" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🔍</button>`;
+    <button id="btn-clues" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">🔍</button>
+    <button id="btn-favor" style="width:30px;height:30px;border-radius:50%;border:1px solid #3d2e60;background:rgba(16,10,30,0.8);color:#b39ddb;font-size:0.9rem;cursor:pointer;">❤️</button>`;
   document.getElementById('btn-inv')?.addEventListener('click', toggleInventory);
   document.getElementById('btn-map')?.addEventListener('click', showMap);
   document.getElementById('btn-time')?.addEventListener('click', useTimePower);
   document.getElementById('btn-chapters')?.addEventListener('click', () => { saveGame(); showChapterSelect(); });
   document.getElementById('btn-clues')?.addEventListener('click', toggleClues);
+  document.getElementById('btn-favor')?.addEventListener('click', toggleFavor);
 }
 
 // ========== HANDLERS ==========
@@ -1395,7 +1431,7 @@ function handleSpot(spot) {
 }
 
 // ========== DIALOG ==========
-function showDialog(speaker, text, onDone, img) {
+function showDialog(speaker, text, onDone, img, rewindFn) {
   $('.dlg-wrap')?.remove(); showingDialog = true;
   const wrap = document.createElement('div');
   wrap.className = 'dlg-wrap';
@@ -1406,6 +1442,8 @@ function showDialog(speaker, text, onDone, img) {
       <img src="images/${img}" alt="${speaker}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
     </div>` : '';
 
+  const rewindBtn = rewindFn ? `<button id="dlg-rewind" style="display:block;width:100%;margin-top:8px;padding:8px 0;border:1px solid #7c4dff;border-radius:10px;background:rgba(124,77,255,0.12);color:#b388ff;font-size:0.8rem;font-family:inherit;cursor:pointer;">⏪ 回到刚才的抉择（重选）</button>` : '';
+
   wrap.innerHTML = `<div style="background:rgba(16,10,30,0.96);border:1px solid #3d2e60;border-radius:14px;padding:16px 18px;backdrop-filter:blur(12px);animation:slideUp 0.25s ease;display:flex;align-items:flex-start;gap:0;">
     ${portraitHTML}
     <div style="flex:1;min-width:0;">
@@ -1413,25 +1451,29 @@ function showDialog(speaker, text, onDone, img) {
       <div style="font-size:0.95rem;line-height:1.65;color:#ede7f6;">${text}</div>
     </div>
   </div>
+  ${rewindBtn}
   <div style="text-align:right;font-size:0.65rem;color:#7c6b9a;margin-top:4px;padding-right:8px;">点击${onDone?'继续':'关闭'} ▸</div>`;
+  if (rewindFn) wrap.querySelector('#dlg-rewind')?.addEventListener('click', (e) => { e.stopPropagation(); wrap.remove(); showingDialog = false; rewindFn(); });
   wrap.addEventListener('click', () => { wrap.remove(); showingDialog = false; if (onDone) setTimeout(onDone, 50); });
   ct().appendChild(wrap);
 }
 
 // ========== DIALOG CHOICES & CLUES ==========
-function playTalk(entries, spot) {
+function playTalk(entries, spot, rewindCtx) {
   let i = 0;
   const advance = () => {
     if (i >= entries.length) return;
     const entry = entries[i++];
     if (Array.isArray(entry)) {
-      showDialog(entry[0], entry[1], i < entries.length ? advance : null, spot && spot.img);
+      showDialog(entry[0], entry[1], i < entries.length ? advance : null, spot && spot.img, rewindCtx || null);
     } else if (entry && Array.isArray(entry.choices)) {
-      showChoice(entry.choices, (choice) => {
+      const choices = entry.choices;
+      const onPick = (choice) => {
         applyChoice(choice);
-        if (choice.next && choice.next.length) playTalk(choice.next, spot);
+        if (choice.next && choice.next.length) playTalk(choice.next, spot, () => { rollbackChoice(); showChoice(choices, onPick, spot && spot.img); });
         else advance();
-      }, spot && spot.img);
+      };
+      showChoice(choices, onPick, spot && spot.img);
     } else {
       advance();
     }
@@ -1461,11 +1503,32 @@ function showChoice(choices, onPick, img) {
   ct().appendChild(wrap);
 }
 
+let lastAppliedEffects = null; // 最近一次选项施加的效果，供「对话回溯重选」时回滚
 function applyChoice(choice) {
-  if (choice.flag) S.flags[choice.flag] = true;
-  if (choice.clue) collectClue(choice.clue);
-  if (choice.item && !S.inv.includes(choice.item)) S.inv.push(choice.item);
-  if (choice.flag || choice.clue || choice.item) saveGame();
+  const eff = { flag:null, clue:null, item:null, favor:[] };
+  if (choice.flag) { S.flags[choice.flag] = true; eff.flag = choice.flag; }
+  if (choice.clue) { collectClue(choice.clue); eff.clue = choice.clue; }
+  if (choice.item && !S.inv.includes(choice.item)) { S.inv.push(choice.item); eff.item = choice.item; }
+  if (choice.favor) {
+    const list = Array.isArray(choice.favor) ? choice.favor : [choice.favor];
+    list.forEach(f => {
+      S.favor[f.id] = (S.favor[f.id] || 0) + f.delta;
+      eff.favor.push({ id:f.id, delta:f.delta });
+    });
+  }
+  if (eff.flag || eff.clue || eff.item || eff.favor.length) saveGame();
+  lastAppliedEffects = eff;
+}
+// 回滚最近一次选项的影响（好感/线索/物品/标记），用于对话回溯重选
+function rollbackChoice() {
+  const eff = lastAppliedEffects;
+  if (!eff) return;
+  if (eff.flag) delete S.flags[eff.flag];
+  if (eff.clue) S.clues = (S.clues || []).filter(c => c !== eff.clue);
+  if (eff.item) S.inv = S.inv.filter(x => x !== eff.item);
+  eff.favor.forEach(f => { S.favor[f.id] = (S.favor[f.id] || 0) - f.delta; if (!S.favor[f.id]) delete S.favor[f.id]; });
+  saveGame();
+  lastAppliedEffects = null;
 }
 
 function collectClue(id) {
@@ -1489,6 +1552,24 @@ function toggleClues() {
   const clues = S.clues || [];
   panel.innerHTML = `<div style="font-size:1rem;color:#ffd54f;margin-bottom:12px;">🔍 已收集线索 (${clues.length})</div>
     ${clues.length ? clues.map(id => `<div style="font-size:0.85rem;color:#ede7f6;line-height:1.6;padding:8px 10px;background:rgba(35,24,56,0.6);border-radius:8px;margin-bottom:8px;">• ${CLUES[id] || id}</div>`).join('') : '<div style="font-size:0.85rem;color:#7c6b9a;">尚未收集任何线索。</div>'}`;
+  ct().appendChild(panel);
+}
+
+// ========== FAVOR (好感度) ==========
+function toggleFavor() {
+  if ($('.favor-panel')) { $('.favor-panel').remove(); $('.favor-backdrop')?.remove(); return; }
+  const bd = document.createElement('div');
+  bd.className = 'favor-backdrop';
+  bd.style.cssText = 'position:absolute;inset:0;z-index:280;background:rgba(5,3,12,0.5);';
+  bd.addEventListener('click', () => { bd.remove(); $('.favor-panel')?.remove(); });
+  ct().appendChild(bd);
+  const panel = document.createElement('div');
+  panel.className = 'favor-panel';
+  panel.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:290;width:90%;max-width:380px;max-height:70vh;overflow-y:auto;background:rgba(16,10,30,0.97);border:1px solid #3d2e60;border-radius:14px;padding:18px;';
+  const fav = S.favor || {};
+  const entries = Object.entries(fav).filter(([_,v]) => v !== 0).sort((a,b) => b[1]-a[1]);
+  panel.innerHTML = `<div style="font-size:1rem;color:#ff8a9a;margin-bottom:12px;">❤️ 守护者好感度</div>
+    ${entries.length ? entries.map(([id,v]) => `<div style="font-size:0.85rem;color:#ede7f6;line-height:1.6;padding:8px 10px;background:rgba(35,24,56,0.6);border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><span>${NPC_NAMES[id]||id}</span><span style="color:#ff8a9a;">${v>0?'+':''}${v}</span></div>`).join('') : '<div style="font-size:0.85rem;color:#7c6b9a;">尚未与任何守护者建立特别羁绊。<br>关键对话中的选择会影响好感，最终章将由此衍生不同结局。</div>'}`;
   ct().appendChild(panel);
 }
 
@@ -1621,37 +1702,186 @@ function puzzleDone(spot) {
 // ========== BATTLE ==========
 function startBattle(spot) {
   if (S.flags[spot.wflag]) { showDialog('旁白', '敌人已经被击败了。'); return; }
-  const en = spot.enemy; let ehp = en.hp; const mhp = en.hp;
+  const en = spot.enemy;
+  const mhp = en.hp;
+  let ehp = mhp;
+  const BMAX = 100;          // 玩家「时间能量护盾」上限
+  let bhp = BMAX;
+  let combo = 0;             // 连击数
+  let cd = { intuition:0, resonance:0 }; // 技能冷却（剩余玩家回合）
+  // 战斗难度自适应：高血量敌人视为 Boss，开启阶段与更频繁的 QTE
+  const isBoss = mhp >= 250;
+  const counterDmg = isBoss ? 14 : 7;   // 普通反击伤害
+  const qteBase = isBoss ? 0.45 : 0.28; // 每次敌方行动触发 QTE 的概率
+  const phaseAt = isBoss ? 0.5 : -1;    // 进入狂暴阶段的 HP 阈值（比例）
+  let enraged = false;
+  let rewindLeft = 3;                   // 战斗内时间回溯次数
+  const snapshots = [];                 // 回溯快照栈（出手前状态）
+  let qteTimer = null;
+
   ct().innerHTML = '';
   const ov = document.createElement('div');
-  ov.style.cssText = 'position:absolute;inset:0;z-index:250;background:radial-gradient(ellipse at center,#1e0a20,#05020a);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+  ov.style.cssText = 'position:absolute;inset:0;z-index:250;background:radial-gradient(ellipse at center,#1e0a20,#05020a);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;';
   ov.innerHTML = `
-    <div id="en-sprite" style="width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(180,0,0,0.4),transparent);display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:16px;cursor:pointer;animation:battleFloat 2s ease-in-out infinite;">${en.sprite}</div>
-    <div style="width:180px;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;margin-bottom:12px;"><div id="ehp-bar" style="height:100%;background:#ff5252;border-radius:4px;width:100%;transition:width 0.3s;"></div></div>
-    <div id="bmsg" style="font-size:0.85rem;color:#b39ddb;margin-bottom:20px;">${en.name} 出现了！点击它来攻击！</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:300px;">
-      <button data-dmg="20" style="padding:8px 14px;border:1px solid #3d2e60;border-radius:8px;background:rgba(35,24,56,0.9);color:#ede7f6;font-size:0.8rem;font-family:inherit;cursor:pointer;">⚔️ 攻击 (20)</button>
-      <button data-dmg="40" data-cost="15" style="padding:8px 14px;border:1px solid #3d2e60;border-radius:8px;background:rgba(35,24,56,0.9);color:#ede7f6;font-size:0.8rem;font-family:inherit;cursor:pointer;">✨ 时间直觉 (15⚡)</button>
-      <button data-dmg="55" data-cost="30" style="padding:8px 14px;border:1px solid #3d2e60;border-radius:8px;background:rgba(35,24,56,0.9);color:#ede7f6;font-size:0.8rem;font-family:inherit;cursor:pointer;">💫 螺旋共鸣 (30⚡)</button>
-    </div>`;
+    <div id="phase-banner" style="position:absolute;top:13%;font-size:1rem;color:#ff5252;font-weight:700;opacity:0;transition:opacity 0.3s;text-shadow:0 0 12px rgba(255,0,0,0.5);"></div>
+    <div id="en-sprite" style="width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(180,0,0,0.4),transparent);display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:10px;cursor:pointer;animation:battleFloat 2s ease-in-out infinite;">${en.sprite}</div>
+    <div style="font-size:0.8rem;color:#b39ddb;margin-bottom:4px;">${en.name}</div>
+    <div style="width:200px;height:10px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden;margin-bottom:4px;"><div id="ehp-bar" style="height:100%;background:linear-gradient(90deg,#ff8a65,#ff5252);border-radius:5px;width:100%;transition:width 0.3s;"></div></div>
+    <div id="ehp-txt" style="font-size:0.7rem;color:#b39ddb;margin-bottom:12px;">${ehp}/${mhp}</div>
+    <div id="bmsg" style="font-size:0.82rem;color:#b39ddb;margin-bottom:8px;text-align:center;min-height:1.2em;">${en.name} 出现了！点击它或下方按钮攻击！</div>
+    <div id="combo-txt" style="font-size:0.9rem;color:#ffd54f;font-weight:700;margin-bottom:8px;min-height:1.2em;"></div>
+    <div style="width:200px;height:10px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden;margin-bottom:4px;"><div id="bhp-bar" style="height:100%;background:linear-gradient(90deg,#69f0ae,#7c4dff);border-radius:5px;width:100%;transition:width 0.3s;"></div></div>
+    <div id="bhp-txt" style="font-size:0.7rem;color:#b39ddb;margin-bottom:14px;">⚡ 时间能量护盾：${bhp}/${BMAX}</div>
+    <div id="atk-row" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:340px;"></div>`;
   ct().appendChild(ov);
 
-  const attack = (dmg, cost) => {
-    if (cost && S.energy < cost) { toast('⚡ 能量不足！'); return; }
+  const atkRow = ov.querySelector('#atk-row');
+  const b1 = mkBtn('⚔️ 攻击 (20)', () => attack(20, 0, 0));
+  const b2 = mkBtn('✨ 时间直觉 (15⚡)', () => attack(40, 15, 1));
+  const b3 = mkBtn('💫 螺旋共鸣 (30⚡)', () => attack(55, 30, 2));
+  const bR = mkBtn('⏪ 回溯 (3)', doRewind);
+  atkRow.append(b1, b2, b3, bR);
+
+  function mkBtn(label, fn) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = 'padding:8px 12px;border:1px solid #3d2e60;border-radius:8px;background:rgba(35,24,56,0.9);color:#ede7f6;font-size:0.78rem;font-family:inherit;cursor:pointer;';
+    b.addEventListener('click', () => { if (!b.disabled) fn(); });
+    return b;
+  }
+  ov.querySelector('#en-sprite').addEventListener('click', () => attack(8, 0, 0));
+
+  function setMsg(t) { ov.querySelector('#bmsg').textContent = t; }
+  function render() {
+    ov.querySelector('#ehp-bar').style.width = Math.max(0, (ehp/mhp)*100) + '%';
+    ov.querySelector('#ehp-txt').textContent = `${Math.max(0, ehp)}/${mhp}`;
+    ov.querySelector('#bhp-bar').style.width = Math.max(0, (bhp/BMAX)*100) + '%';
+    ov.querySelector('#bhp-txt').textContent = `⚡ 时间能量护盾：${Math.max(0, bhp)}/${BMAX}`;
+    ov.querySelector('#combo-txt').textContent = combo >= 2 ? `🔥 连击 x${combo}（伤害 +${Math.min(combo,10)*5}%）` : '';
+    b2.textContent = cd.intuition > 0 ? `✨ 时间直觉 (冷却${cd.intuition})` : '✨ 时间直觉 (15⚡)';
+    b3.textContent = cd.resonance > 0 ? `💫 螺旋共鸣 (冷却${cd.resonance})` : '💫 螺旋共鸣 (30⚡)';
+    b2.disabled = cd.intuition > 0; b3.disabled = cd.resonance > 0;
+    b2.style.opacity = b2.disabled ? '0.45' : '1';
+    b3.style.opacity = b3.disabled ? '0.45' : '1';
+    bR.textContent = `⏪ 回溯 (${rewindLeft})`;
+    bR.disabled = rewindLeft <= 0;
+    bR.style.opacity = bR.disabled ? '0.45' : '1';
+  }
+
+  function pushSnapshot() {
+    snapshots.push({ ehp, bhp, combo, cd:{...cd} });
+    if (snapshots.length > 30) snapshots.shift();
+  }
+
+  function doRewind() {
+    if (rewindLeft <= 0) { toast('⏪ 回溯次数已用尽'); return; }
+    if (qteTimer) { clearTimeout(qteTimer); ov.querySelector('#qte')?.remove(); qteTimer = null; }
+    if (snapshots.length === 0) { toast('⏪ 没有可回溯的步骤'); return; }
+    const s = snapshots.pop();
+    ehp = s.ehp; bhp = s.bhp; combo = s.combo; cd = {...s.cd};
+    rewindLeft--;
+    S.energy = Math.max(0, S.energy - 10);
+    updateHUD(getRoom()[S.room].name);
+    setMsg('⏪ 时间回溯！回到了上一步之前……');
+    render();
+  }
+
+  function attack(dmg, cost, type) {
+    if (qteTimer) return; // QTE 进行中不能普通攻击
+    if (cost && S.energy < cost) { toast('⚡ 时间能量不足！'); return; }
+    // 冷却逐回合递减
+    if (cd.intuition > 0) cd.intuition--;
+    if (cd.resonance > 0) cd.resonance--;
+    if (type === 1 && cd.intuition > 0) { render(); return; }
+    if (type === 2 && cd.resonance > 0) { render(); return; }
+    pushSnapshot();
     if (cost) S.energy -= cost;
-    ehp -= dmg + Math.floor(Math.random() * 10);
-    if (ehp <= 0) { ehp = 0;
-      document.getElementById('ehp-bar').style.width = '0%';
-      document.getElementById('bmsg').textContent = `✨ 胜利！${en.name} 被击败了！`;
-      S.flags[spot.wflag] = true; saveGame();
-      setTimeout(() => { ct().innerHTML = ''; renderRoom(); toast('⚔️ 战斗胜利！'); checkGoal(spot.wflag); }, 1500);
-    } else {
-      document.getElementById('ehp-bar').style.width = `${(ehp/mhp)*100}%`;
-      document.getElementById('bmsg').textContent = `造成了 ${dmg} 点伤害！${en.name} 反击！`;
-    }
-  };
-  document.getElementById('en-sprite')?.addEventListener('click', () => attack(8, 0));
-  ov.querySelectorAll('button').forEach(btn => { btn.addEventListener('click', () => attack(parseInt(btn.dataset.dmg), parseInt(btn.dataset.cost)||0)); });
+    if (type === 1) cd.intuition = 2;
+    if (type === 2) cd.resonance = 3;
+    combo++;
+    const mult = 1 + Math.min(combo, 10) * 0.05;
+    const dealt = Math.round((dmg + Math.floor(Math.random() * 10)) * mult);
+    ehp -= dealt;
+    setMsg(`造成了 ${dealt} 点伤害！${en.name} 反击！`);
+    if (ehp <= 0) { render(); return victory(); }
+    bhp -= counterDmg;
+    if (bhp <= 0) { render(); return defeat(); }
+    if (!enraged && phaseAt > 0 && ehp <= mhp * phaseAt) enterRage();
+    render();
+    if (Math.random() < (enraged ? 0.75 : qteBase)) setTimeout(triggerQTE, 450);
+  }
+
+  function enterRage() {
+    enraged = true;
+    const banner = ov.querySelector('#phase-banner');
+    banner.textContent = '⚠️ ' + en.name + ' 进入狂暴！';
+    banner.style.opacity = '1';
+    ov.querySelector('#en-sprite').style.filter = 'drop-shadow(0 0 14px #ff1744) hue-rotate(-20deg)';
+    setTimeout(() => { banner.style.opacity = '0'; }, 1600);
+  }
+
+  function triggerQTE() {
+    if (ehp <= 0 || bhp <= 0) return;
+    const dur = enraged ? 900 : 1300;
+    const qte = document.createElement('div');
+    qte.id = 'qte';
+    qte.style.cssText = 'position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);z-index:260;text-align:center;';
+    qte.innerHTML = `
+      <div style="font-size:0.9rem;color:#ff5252;font-weight:700;margin-bottom:10px;animation:fadeIn 0.2s;">⚡ ${en.name} 蓄力重击！点击闪避！</div>
+      <button id="qte-btn" style="width:84px;height:84px;border-radius:50%;border:3px solid #ffd54f;background:radial-gradient(circle,rgba(255,213,79,0.25),transparent);color:#ffd54f;font-size:0.9rem;font-family:inherit;cursor:pointer;animation:qteShrink ${dur}ms linear forwards;">⚡ 闪避</button>`;
+    ov.appendChild(qte);
+    const btn = qte.querySelector('#qte-btn');
+    let resolved = false, perfect = true;
+    const pwTimer = setTimeout(() => { perfect = false; }, dur * 0.35);
+    const finish = (isPerfect) => {
+      if (resolved) return; resolved = true;
+      clearTimeout(pwTimer); clearTimeout(qteTimer); qteTimer = null;
+      qte.remove();
+      if (isPerfect) {
+        const reflect = 20 + Math.floor(Math.random() * 10);
+        ehp -= reflect; combo++;
+        setMsg(`🛡️ 完美格挡！反弹 ${reflect} 点伤害！`);
+        if (ehp <= 0) { render(); return victory(); }
+      } else {
+        setMsg('✨ 闪避成功！没有受到伤害。');
+      }
+      render();
+    };
+    btn.addEventListener('click', () => finish(perfect));
+    qteTimer = setTimeout(() => {
+      if (resolved) return; resolved = true;
+      clearTimeout(pwTimer); qte.remove();
+      const heavy = counterDmg * 2;
+      bhp -= heavy; combo = 0;
+      setMsg(`💥 被重击命中！损失 ${heavy} 点护盾！`);
+      if (bhp <= 0) { render(); return defeat(); }
+      render();
+    }, dur);
+  }
+
+  function victory() {
+    ov.querySelector('#ehp-bar').style.width = '0%';
+    setMsg(`✨ 胜利！${en.name} 被击败了！`);
+    S.flags[spot.wflag] = true; saveGame();
+    setTimeout(() => { ct().innerHTML = ''; renderRoom(); toast('⚔️ 战斗胜利！'); checkGoal(spot.wflag); }, 1500);
+  }
+
+  function defeat() {
+    if (qteTimer) { clearTimeout(qteTimer); ov.querySelector('#qte')?.remove(); qteTimer = null; }
+    ov.querySelector('#bhp-bar').style.width = '0%';
+    ov.innerHTML = `
+      <div style="font-size:3rem;margin-bottom:12px;">💔</div>
+      <div style="font-size:1.3rem;color:#ff5252;font-weight:700;margin-bottom:8px;">时间能量护盾破碎……</div>
+      <div style="font-size:0.82rem;color:#b39ddb;margin-bottom:20px;text-align:center;max-width:260px;">${en.name} 太强大了。但时间之河尚未终结——再试一次，或回溯到关键一步。</div>
+      <div style="display:flex;gap:10px;">
+        <button id="btn-retry" style="padding:10px 20px;border:none;border-radius:20px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:0.9rem;font-family:inherit;cursor:pointer;">🔄 重新挑战</button>
+        <button id="btn-rewind-d" style="padding:10px 20px;border:1px solid #ffd54f;border-radius:20px;background:rgba(255,213,79,0.1);color:#ffd54f;font-size:0.9rem;font-family:inherit;cursor:pointer;" ${rewindLeft<=0?'disabled':''}>⏪ 回溯 (${rewindLeft})</button>
+      </div>`;
+    ov.querySelector('#btn-retry').addEventListener('click', () => startBattle(spot));
+    ov.querySelector('#btn-rewind-d')?.addEventListener('click', () => { if (rewindLeft <= 0) return; rewindLeft--; startBattle(spot); });
+  }
+
+  render();
 }
 
 // ========== CHAPTER COMPLETION ==========
@@ -1670,6 +1900,44 @@ function checkGoal(flag) {
   }
 }
 
+// ========== ENDINGS (最终章多结局) ==========
+function computeEnding() {
+  const fav = S.favor || {};
+  const total = Object.values(fav).reduce((a, b) => a + b, 0);
+  let maxId = null, maxV = -Infinity;
+  Object.entries(fav).forEach(([id, v]) => { if (v > maxV) { maxV = v; maxId = id; } });
+  // 挚友结局：与某位伙伴（18/14/11）羁绊极深
+  if (maxId && maxV >= 4 && (maxId === 'n18' || maxId === 'n14' || maxId === 'n11')) return 'friend';
+  // 羁绊结局：与众多守护者普遍建立了深厚羁绊
+  if (total >= 6) return 'bonds';
+  // 孤勇结局：独自承担
+  return 'lone';
+}
+
+function showEnding(branch) {
+  const fav = S.favor || {};
+  const E = {
+    bonds: { icon:'🤝', title:'羁绊结局 · 共鸣不灭', text:'时间螺旋重新闪耀。你与每一位守护者的羁绊在此刻凝聚成最坚固的「时间共鸣」——没有什么暗影能撕裂这样的联结。36 的牺牲，终被所有活着的人一同承接。' },
+    friend: { icon:'😸', title:'挚友结局 · 并肩同行', text:'某个总爱插科打诨的伙伴蹦到你面前：「喂！别摆出那副拯救世界的表情！没有我，你早无聊死了吧？」你终于笑了。原来最强的力量，是有人陪你一起犯傻、一起战斗到最后一刻。' },
+    lone: { icon:'🌟', title:'孤勇结局 · 独行守望', text:'你独自站在重铸的时间螺旋中心。36 的遗志在胸中燃烧。这条路注定孤独，但你不再害怕——因为你本就是时间螺旋在万千时间线中，做出的那个选择。' },
+  }[branch];
+  const favLines = Object.entries(fav).filter(([_,v]) => v !== 0).sort((a,b) => b[1]-a[1])
+    .map(([id,v]) => `• ${NPC_NAMES[id]||id}：${'❤️'.repeat(Math.max(0, Math.min(v,5)))}${v>5?` (+${v-5})`:''}`).join('<br>') || '（未与任何人建立特别羁绊）';
+  ct().innerHTML = '';
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:absolute;inset:0;z-index:250;background:rgba(5,3,12,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;';
+  ov.innerHTML = `
+    <div style="font-size:3.5rem;margin-bottom:10px;">${E.icon}</div>
+    <div style="font-size:1.4rem;color:#ffd54f;font-weight:700;margin-bottom:14px;">${E.title}</div>
+    <div style="font-size:0.92rem;color:#ede7f6;line-height:1.9;max-width:320px;margin-bottom:18px;text-align:left;">${E.text}</div>
+    <div style="font-size:0.8rem;color:#b39ddb;margin-bottom:6px;">❤️ 本次旅程的羁绊</div>
+    <div style="font-size:0.8rem;color:#c5bfd6;line-height:1.8;margin-bottom:20px;text-align:left;">${favLines}</div>
+    <button id="btn-end" style="width:200px;padding:12px 0;border:none;border-radius:24px;background:linear-gradient(135deg,#7c4dff,#b388ff);color:white;font-size:1rem;font-family:inherit;cursor:pointer;">📖 回到章节选择</button>
+    <div style="font-size:0.7rem;color:#7c6b9a;margin-top:10px;">提示：用「⏪ 时间回溯」重选关键对话，可探索不同结局</div>`;
+  ct().appendChild(ov);
+  ov.querySelector('#btn-end').addEventListener('click', () => showChapterSelect());
+}
+
 function completeChapter() {
   if (!S.completed.includes(S.chapter)) {
     S.completed.push(S.chapter);
@@ -1681,6 +1949,8 @@ function completeChapter() {
     }
     saveGame();
   }
+  // 最终章：依据好感度衍生不同结局
+  if (S.chapter === 'ch8') { showEnding(computeEnding()); return; }
   // Show victory
   const ch = [...CHAPTERS, ...EXTRAS].find(c => c.id === S.chapter);
   ct().innerHTML = '';
@@ -1789,7 +2059,7 @@ function saveGame() {
     chapter:S.chapter, room:S.room, energy:S.energy, inv:S.inv,
     flags:S.flags, visited:S.visited, unlocked:S.unlocked, completed:S.completed,
     talkedNPCs:S.talkedNPCs || {}, chapterNPCsTalked:S.chapterNPCsTalked || {},
-    clues:S.clues || []
+    clues:S.clues || [], favor:S.favor || {}
   }));
 }
 function loadGame() {
@@ -1803,6 +2073,7 @@ function loadGame() {
     S.talkedNPCs = d.talkedNPCs || {};
     S.chapterNPCsTalked = d.chapterNPCsTalked || S.talkedNPCs[S.chapter] || {};
     S.clues = d.clues || [];
+    S.favor = d.favor || {};
     repairSave(); // fix corrupted saves from old buggy code
     return true;
   }
@@ -1827,7 +2098,7 @@ function repairSave() {
 function resetState() {
   S.chapter = 'prologue'; S.room = 'spiral_nexus'; S.energy = 100;
   S.inv = []; S.flags = {}; S.visited = {}; S.chapterNPCsTalked = {};
-  S.talkedNPCs = {}; S.clues = [];
+  S.talkedNPCs = {}; S.clues = []; S.favor = {};
   S.unlocked = ['prologue']; S.completed = []; S.goal = ''; S.goalNPCs = [];
 }
 
